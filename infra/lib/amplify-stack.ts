@@ -35,7 +35,17 @@ export interface AmplifyStackProps extends cdk.StackProps {
      * Custom domain name (optional)
      * @default - Retrieved from context or environment variable DOMAIN_NAME
      */
+    /**
+     * Custom domain name (optional)
+     * @default - Retrieved from context or environment variable DOMAIN_NAME
+     */
     readonly domainName?: string;
+
+    /**
+     * Amplify App Name
+     * @default - Retrieved from environment variable AMPLIFY_APP_NAME or defaults to 'next-amplify-starter-kit'
+     */
+    readonly amplifyAppName?: string;
 }
 
 export class AmplifyStack extends cdk.Stack {
@@ -49,10 +59,17 @@ export class AmplifyStack extends cdk.Stack {
         const repoOwner =
             props?.repositoryOwner ||
             this.node.tryGetContext('repositoryOwner') ||
+            process.env.REPO_OWNER ||
             'i-Willink-Inc';
         const repoName =
             props?.repositoryName ||
             this.node.tryGetContext('repositoryName') ||
+            process.env.REPO_NAME ||
+            'next-amplify-starter-kit';
+
+        const appName = 
+            props?.amplifyAppName ||
+            process.env.AMPLIFY_APP_NAME ||
             'next-amplify-starter-kit';
 
         // Determine GitHub token source
@@ -69,7 +86,7 @@ export class AmplifyStack extends cdk.Stack {
 
         // Amplify App
         this.amplifyApp = new amplify.CfnApp(this, 'AmplifyApp', {
-            name: 'next-amplify-starter-kit',
+            name: appName,
             repository: `https://github.com/${repoOwner}/${repoName}`,
             accessToken: githubToken,
             platform: 'WEB_COMPUTE', // Required for Next.js SSR
@@ -139,6 +156,10 @@ export class AmplifyStack extends cdk.Stack {
                     },
                 ],
             });
+
+            // Ensure domain is created after branch
+            const domain = this.node.findChild('AmplifyDomain') as amplify.CfnDomain;
+            domain.addDependency(this.mainBranch);
 
             new cdk.CfnOutput(this, 'CustomDomainUrl', {
                 value: `https://${domainName}`,

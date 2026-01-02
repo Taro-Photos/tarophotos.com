@@ -15,6 +15,10 @@ export default function LanguageSwitcher() {
         router.push(newPath);
     };
 
+    if (locales.length <= 1) {
+        return null;
+    }
+
     return (
         <div className="flex items-center gap-2">
             {locales.map((loc) => (

@@ -77,10 +77,9 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
         },
         alternates: {
             canonical: `/${locale}`,
-            languages: {
-                'ja': '/ja',
-                'en': '/en',
-            },
+            languages: Object.fromEntries(
+                locales.map((l) => [l, `/${l}`])
+            ),
         },
     };
 }

@@ -5,7 +5,9 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { Construct } from 'constructs';
 
-export interface AmplifyStackProps extends cdk.StackProps {
+// CI Trigger: Force infrastructure deployment to create Amplify App
+export interface AmplifyStackProps extends cdk.StackProps
+{
     /**
      * GitHub repository owner/organization
      * @default - Retrieved from context or environment
@@ -48,11 +50,13 @@ export interface AmplifyStackProps extends cdk.StackProps {
     readonly amplifyAppName?: string;
 }
 
-export class AmplifyStack extends cdk.Stack {
+export class AmplifyStack extends cdk.Stack
+{
     public readonly amplifyApp: amplify.CfnApp;
     public readonly mainBranch: amplify.CfnBranch;
 
-    constructor(scope: Construct, id: string, props?: AmplifyStackProps) {
+    constructor(scope: Construct, id: string, props?: AmplifyStackProps)
+    {
         super(scope, id, props);
 
         // Get configuration from context or use defaults
@@ -66,13 +70,15 @@ export class AmplifyStack extends cdk.Stack {
 
         const appName = props?.amplifyAppName || process.env.AMPLIFY_APP_NAME;
 
-        if (!repoName) {
+        if (!repoName)
+        {
             throw new Error(
                 'Repository Name is required. Set REPO_NAME environment variable or pass via context/props.'
             );
         }
 
-        if (!appName) {
+        if (!appName)
+        {
             throw new Error(
                 'Amplify App Name is required. Set AMPLIFY_APP_NAME environment variable or pass via props.'
             );
@@ -147,7 +153,8 @@ export class AmplifyStack extends cdk.Stack {
             this.node.tryGetContext('domainName') ||
             process.env.DOMAIN_NAME;
 
-        if (domainName) {
+        if (domainName)
+        {
             new amplify.CfnDomain(this, 'AmplifyDomain', {
                 appId: this.amplifyApp.attrAppId,
                 domainName: domainName,
@@ -187,8 +194,10 @@ export class AmplifyStack extends cdk.Stack {
     private resolveGitHubToken(
         props: AmplifyStackProps | undefined,
         useSecretsManager: boolean
-    ): string {
-        if (useSecretsManager) {
+    ): string
+    {
+        if (useSecretsManager)
+        {
             // Recommended: Use Secrets Manager
             const secretName = props?.githubTokenSecretName || 'github/amplify-token';
             const secret = secretsmanager.Secret.fromSecretNameV2(
@@ -197,14 +206,16 @@ export class AmplifyStack extends cdk.Stack {
                 secretName
             );
             return secret.secretValue.unsafeUnwrap();
-        } else {
+        } else
+        {
             // Cost reduction option: Use environment variable
             const token =
                 props?.githubToken ||
                 this.node.tryGetContext('githubToken') ||
                 process.env.GITHUB_TOKEN;
 
-            if (!token) {
+            if (!token)
+            {
                 throw new Error(
                     'GitHub token is required when USE_SECRETS_MANAGER=false. ' +
                     'Set GITHUB_TOKEN environment variable or pass via context/props.'

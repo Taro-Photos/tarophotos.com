@@ -226,7 +226,7 @@ jobs:
         with:
           name: build-output
           path: |
-            apps/web/.next
+            apps/web/.next/**
           retention-days: 7
 
   cdk-check:

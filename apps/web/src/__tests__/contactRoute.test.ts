@@ -9,20 +9,20 @@ vi.mock("@aws-sdk/client-ses", () =>
   return {
     SESClient: class
     {
-      constructor(config: any)
+      constructor(config: unknown)
       {
         sesConstructorMock(config);
       }
-      send(command: any)
+      send(command: unknown)
       {
         return sendMock(command);
       }
     },
     SendEmailCommand: class
     {
-      constructor(input: any)
+      constructor(input: unknown)
       {
-        return input;
+        Object.assign(this, input);
       }
     },
   };

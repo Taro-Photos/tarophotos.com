@@ -111,6 +111,7 @@ describe("POST /api/contact", () =>
             name: "山田 太郎",
             email: "guest@example.com",
             message: "取材させてください",
+            agree: "同意する",
           },
         },
         { referer: "https://taro.photos/contact", "user-agent": "Vitest" },
@@ -140,22 +141,129 @@ describe("POST /api/contact", () =>
     expect(autoResponseCommand.Message.Subject.Data).toContain("お問い合わせありがとうございます");
   });
 
-  it("returns 500 when SES send fails", async () =>
+  it("returns 500 when SES send fails with specific error info", async () =>
   {
     process.env.SES_FROM_EMAIL = "noreply@example.com";
     process.env.CONTACT_NOTIFICATION_EMAIL = "inbox@example.com";
 
     const errorSpy = vi.spyOn(console, "error").mockImplementation(() => { });
+
+    // Test generic error
     sendMock.mockRejectedValueOnce(new Error("AWS SES Error"));
-
     const { POST } = await import("@/app/api/contact/route");
-
-    const response = await POST(createRequest({ fields: {} }));
+    const response = await POST(createRequest({ fields: { name: "Test", email: "test@example.com", message: "Hello", category: "Other", agree: "yes" } }));
     expect(response.status).toBe(500);
     await expect(response.json()).resolves.toMatchObject({
       message: "Failed to send email.",
+      error: "AWS SES Error"
     });
 
     errorSpy.mockRestore();
+  });
+
+  describe("SES specific errors", () =>
+  {
+    beforeEach(() =>
+    {
+      process.env.SES_FROM_EMAIL = "noreply@example.com";
+      process.env.CONTACT_NOTIFICATION_EMAIL = "inbox@example.com";
+      // Reset module registry to re-import handler with env vars
+      vi.resetModules();
+    });
+
+    it("handles MessageRejected error", async () =>
+    {
+      const errorSpy = vi.spyOn(console, "error").mockImplementation(() => { });
+      const error = new Error("Message rejected");
+      (error as any).name = "MessageRejected";
+      sendMock.mockRejectedValueOnce(error);
+
+      const { POST } = await import("@/app/api/contact/route");
+      const response = await POST(createRequest({ fields: { name: "Test", email: "test@example.com", message: "Hello", category: "Other", agree: "yes" } }));
+
+      expect(response.status).toBe(500);
+      await expect(response.json()).resolves.toMatchObject({
+        message: "Email delivery failed: Address not verified or spam detected.",
+        error: "Message rejected"
+      });
+      errorSpy.mockRestore();
+    });
+
+    it("handles AccountSendingPausedException", async () =>
+    {
+      const errorSpy = vi.spyOn(console, "error").mockImplementation(() => { });
+      const error = new Error("Sending paused");
+      (error as any).name = "AccountSendingPausedException";
+      sendMock.mockRejectedValueOnce(error);
+
+      const { POST } = await import("@/app/api/contact/route");
+      const response = await POST(createRequest({ fields: { name: "Test", email: "test@example.com", message: "Hello", category: "Other", agree: "yes" } }));
+
+      expect(response.status).toBe(500);
+      await expect(response.json()).resolves.toMatchObject({
+        message: "Email delivery failed: Account sending paused.",
+        error: "Sending paused"
+      });
+      errorSpy.mockRestore();
+    });
+
+    it("handles AccessDeniedException", async () =>
+    {
+      const errorSpy = vi.spyOn(console, "error").mockImplementation(() => { });
+      const error = new Error("Access denied");
+      (error as any).name = "AccessDeniedException";
+      sendMock.mockRejectedValueOnce(error);
+
+      const { POST } = await import("@/app/api/contact/route");
+      const response = await POST(createRequest({ fields: { name: "Test", email: "test@example.com", message: "Hello", category: "Other", agree: "yes" } }));
+
+      expect(response.status).toBe(500);
+      await expect(response.json()).resolves.toMatchObject({
+        message: "Email delivery failed: Access denied. Check IAM permissions.",
+        error: "Access denied"
+      });
+      errorSpy.mockRestore();
+    });
+  });
+
+  describe("Validation", () =>
+  {
+    beforeEach(() =>
+    {
+      process.env.SES_FROM_EMAIL = "noreply@example.com";
+      process.env.CONTACT_NOTIFICATION_EMAIL = "inbox@example.com";
+      vi.resetModules();
+    });
+
+    it("returns 400 when required fields are missing", async () =>
+    {
+      const { POST } = await import("@/app/api/contact/route");
+      // Missing name
+      const response = await POST(createRequest({ fields: { email: "test@example.com", message: "Hello", category: "Other", agree: "yes" } }));
+      expect(response.status).toBe(400);
+      await expect(response.json()).resolves.toMatchObject({
+        message: expect.stringContaining("Missing required field")
+      });
+    });
+
+    it("returns 400 when email is invalid", async () =>
+    {
+      const { POST } = await import("@/app/api/contact/route");
+      const response = await POST(createRequest({ fields: { name: "Test", email: "invalid-email", message: "Hello", category: "Other", agree: "yes" } }));
+      expect(response.status).toBe(400);
+      await expect(response.json()).resolves.toMatchObject({
+        message: expect.stringContaining("Invalid email format")
+      });
+    });
+
+    it("returns 400 when category is empty", async () =>
+    {
+      const { POST } = await import("@/app/api/contact/route");
+      const response = await POST(createRequest({ fields: { name: "Test", email: "test@example.com", message: "Hello", category: "", agree: "yes" } }));
+      expect(response.status).toBe(400);
+      await expect(response.json()).resolves.toMatchObject({
+        message: expect.stringContaining("Missing required field")
+      });
+    });
   });
 });

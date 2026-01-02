@@ -322,6 +322,38 @@ export async function processFormSubmission(
     return Response.json({ message: "Invalid payload." }, { status: 400 });
   }
 
+  // Validate fields based on definitions
+  if (options.fieldDefinitions)
+  {
+    for (const field of options.fieldDefinitions)
+    {
+      const value = (fieldsCandidate as FieldMap)[field.key];
+
+      // Check required fields
+      if (field.required)
+      {
+        if (value === undefined || value === null || value === "")
+        {
+          return Response.json({ message: `Missing required field: ${field.label}` }, { status: 400 });
+        }
+        if (Array.isArray(value) && value.length === 0)
+        {
+          return Response.json({ message: `Missing required field: ${field.label}` }, { status: 400 });
+        }
+      }
+
+      // Check email format
+      if (field.type === "email" && value && typeof value === "string")
+      {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(value))
+        {
+          return Response.json({ message: `Invalid email format: ${field.label}` }, { status: 400 });
+        }
+      }
+    }
+  }
+
   const payload: FormSubmissionPayload = {
     submittedAt: new Date().toISOString(),
     fields: fieldsCandidate as FieldMap,

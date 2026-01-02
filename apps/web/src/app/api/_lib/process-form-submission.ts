@@ -51,24 +51,34 @@ type EmailContent = {
   replyTo?: string;
 };
 
-const RESEND_API_KEY = process.env.RESEND_API_KEY;
-const RESEND_FROM_EMAIL = process.env.RESEND_FROM_EMAIL;
+function getResendConfig()
+{
+  return {
+    apiKey: process.env.RESEND_API_KEY,
+    fromEmail: process.env.RESEND_FROM_EMAIL,
+  };
+}
 
 let resendClient: Resend | null = null;
 
-function getResendClient(): Resend | null {
-  if (!RESEND_API_KEY) {
+function getResendClient(): Resend | null
+{
+  const { apiKey } = getResendConfig();
+  if (!apiKey)
+  {
     return null;
   }
 
-  if (!resendClient) {
-    resendClient = new Resend(RESEND_API_KEY);
+  if (!resendClient)
+  {
+    resendClient = new Resend(apiKey);
   }
 
   return resendClient;
 }
 
-function escapeHtml(value: string) {
+function escapeHtml(value: string)
+{
   return value
     .replaceAll("&", "&amp;")
     .replaceAll("<", "&lt;")
@@ -77,8 +87,10 @@ function escapeHtml(value: string) {
     .replaceAll("'", "&#39;");
 }
 
-function coerceToString(value: FieldValue): string {
-  if (Array.isArray(value)) {
+function coerceToString(value: FieldValue): string
+{
+  if (Array.isArray(value))
+  {
     return value.join(", ");
   }
 
@@ -89,7 +101,8 @@ function resolveMessage(
   template: MessageFactory,
   payload: FormSubmissionPayload,
   context: MessageContext,
-) {
+)
+{
   return typeof template === "function" ? template(payload, context) : template;
 }
 
@@ -98,17 +111,20 @@ type FieldEntry = { key: string; label: string; value: string };
 function buildFieldEntries(
   payload: FormSubmissionPayload,
   fieldDefinitions?: FormField[],
-): FieldEntry[] {
+): FieldEntry[]
+{
   const labelMap = new Map(fieldDefinitions?.map((field) => [field.key, field.label]));
 
-  return Object.entries(payload.fields).map(([key, rawValue]) => {
+  return Object.entries(payload.fields).map(([key, rawValue]) =>
+  {
     const label = labelMap.get(key) ?? key;
     const value = coerceToString(rawValue);
     return { key, label, value };
   });
 }
 
-function buildSummaryHtml(entries: FieldEntry[]) {
+function buildSummaryHtml(entries: FieldEntry[])
+{
   const rows = entries
     .map(
       ({ label, value }) =>
@@ -127,9 +143,11 @@ function buildSummaryHtml(entries: FieldEntry[]) {
   `;
 }
 
-function buildSummaryText(entries: FieldEntry[]) {
+function buildSummaryText(entries: FieldEntry[])
+{
   const lines: string[] = [];
-  entries.forEach(({ label, value }) => {
+  entries.forEach(({ label, value }) =>
+  {
     lines.push(`${label}: ${value || "(未入力)"}`);
   });
   return lines.join("\n");
@@ -138,7 +156,8 @@ function buildSummaryText(entries: FieldEntry[]) {
 function buildEmailContent(
   payload: FormSubmissionPayload,
   options: FormSubmissionOptions,
-): EmailContent {
+): EmailContent
+{
   const entries = buildFieldEntries(payload, options.fieldDefinitions);
 
   const subject =
@@ -169,8 +188,8 @@ function buildEmailContent(
   const html = `
     <div style="font-family:system-ui,-apple-system,'Segoe UI',sans-serif;background:#f8fafc;padding:24px;">
       <h1 style="margin:0 0 16px;font-size:20px;color:#0f172a;">${escapeHtml(
-        options.displayName,
-      )} の新しい送信</h1>
+    options.displayName,
+  )} の新しい送信</h1>
       <table style="border-collapse:collapse;width:100%;background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 12px 24px -16px rgba(15,23,42,0.35);">
         <tbody>
           ${rowsHtml}
@@ -191,7 +210,8 @@ function buildEmailContent(
     "",
   ];
 
-  entries.forEach(({ label, value }) => {
+  entries.forEach(({ label, value }) =>
+  {
     textLines.push(`${label}: ${value || "(未入力)"}`);
   });
 
@@ -201,10 +221,12 @@ function buildEmailContent(
   const replyToField = options.replyToField;
   let replyTo: string | undefined;
 
-  if (replyToField) {
+  if (replyToField)
+  {
     const candidate = payload.fields[replyToField];
     const candidateValue = candidate ? coerceToString(candidate) : "";
-    if (candidateValue && candidateValue.includes("@")) {
+    if (candidateValue && candidateValue.includes("@"))
+    {
       replyTo = candidateValue;
     }
   }
@@ -220,33 +242,42 @@ function buildEmailContent(
 export async function processFormSubmission(
   request: NextRequest,
   options: FormSubmissionOptions,
-) {
-  if (!RESEND_API_KEY || !RESEND_FROM_EMAIL) {
+)
+{
+  const { apiKey, fromEmail } = getResendConfig();
+
+  if (!apiKey || !fromEmail)
+  {
     console.error("Resend is not fully configured");
     return Response.json({ message: "Email delivery is not configured." }, { status: 500 });
   }
 
-  if (!options.notificationEmail) {
+  if (!options.notificationEmail)
+  {
     console.error(`${options.formKey} notification email is not configured`);
     return Response.json({ message: options.missingNotificationMessage }, { status: 500 });
   }
 
   let body: unknown;
 
-  try {
+  try
+  {
     body = await request.json();
-  } catch (error) {
+  } catch (error)
+  {
     console.error(`${options.formKey} payload parse error`, error);
     return Response.json({ message: "Invalid payload." }, { status: 400 });
   }
 
-  if (!body || typeof body !== "object" || !("fields" in body)) {
+  if (!body || typeof body !== "object" || !("fields" in body))
+  {
     return Response.json({ message: "Invalid payload." }, { status: 400 });
   }
 
   const fieldsCandidate = (body as { fields?: unknown }).fields;
 
-  if (!fieldsCandidate || typeof fieldsCandidate !== "object" || Array.isArray(fieldsCandidate)) {
+  if (!fieldsCandidate || typeof fieldsCandidate !== "object" || Array.isArray(fieldsCandidate))
+  {
     return Response.json({ message: "Invalid payload." }, { status: 400 });
   }
 
@@ -261,16 +292,18 @@ export async function processFormSubmission(
 
   const emailContent = buildEmailContent(payload, options);
 
-  try {
+  try
+  {
     const client = getResendClient();
 
-    if (!client) {
+    if (!client)
+    {
       console.error("Resend API key is missing at send time");
       return Response.json({ message: "Email delivery is not configured." }, { status: 500 });
     }
 
     const { data: primaryData, error: primaryError } = await client.emails.send({
-      from: RESEND_FROM_EMAIL,
+      from: fromEmail,
       to: options.notificationEmail,
       subject: emailContent.subject,
       html: emailContent.html,
@@ -278,7 +311,8 @@ export async function processFormSubmission(
       ...(emailContent.replyTo ? { reply_to: emailContent.replyTo } : {}),
     });
 
-    if (primaryError) {
+    if (primaryError)
+    {
       throw primaryError;
     }
 
@@ -286,11 +320,13 @@ export async function processFormSubmission(
 
     const autoResponseConfig = options.autoResponse;
 
-    if (autoResponseConfig) {
+    if (autoResponseConfig)
+    {
       const recipientRaw = payload.fields[autoResponseConfig.emailField];
       const recipientEmail = recipientRaw ? coerceToString(recipientRaw).trim() : "";
 
-      if (recipientEmail.includes("@")) {
+      if (recipientEmail.includes("@"))
+      {
         const nameRaw = autoResponseConfig.nameField
           ? payload.fields[autoResponseConfig.nameField]
           : undefined;
@@ -311,14 +347,15 @@ export async function processFormSubmission(
         const autoText = resolveMessage(autoResponseConfig.text, payload, context);
 
         const { data: autoData, error: autoError } = await client.emails.send({
-          from: RESEND_FROM_EMAIL,
+          from: fromEmail,
           to: recipientEmail,
           subject: autoSubject,
           html: autoHtml,
           text: autoText,
         });
 
-        if (autoError) {
+        if (autoError)
+        {
           throw autoError;
         }
 
@@ -330,7 +367,8 @@ export async function processFormSubmission(
     }
 
     return Response.json({ message: options.successMessage });
-  } catch (error) {
+  } catch (error)
+  {
     console.error(`${options.formKey} email send failed`, error);
     return Response.json({ message: "Failed to send email." }, { status: 500 });
   }

@@ -4,16 +4,21 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 const sendMock = vi.fn();
 const resendConstructorMock = vi.fn();
 
-vi.mock("resend", () => ({
-  Resend: vi.fn().mockImplementation((apiKey: string) => {
-    resendConstructorMock(apiKey);
-    return {
-      emails: {
+vi.mock("resend", () =>
+{
+  return {
+    Resend: class
+    {
+      constructor(apiKey: string)
+      {
+        resendConstructorMock(apiKey);
+      }
+      emails = {
         send: sendMock,
-      },
-    };
-  }),
-}));
+      };
+    },
+  };
+});
 
 const originalEnv = {
   RESEND_API_KEY: process.env.RESEND_API_KEY,
@@ -21,7 +26,8 @@ const originalEnv = {
   CONTACT_NOTIFICATION_EMAIL: process.env.CONTACT_NOTIFICATION_EMAIL,
 };
 
-function createRequest(body: unknown, headers?: Record<string, string>) {
+function createRequest(body: unknown, headers?: Record<string, string>)
+{
   return new NextRequest("http://localhost/api/contact", {
     method: "POST",
     body: JSON.stringify(body),
@@ -32,8 +38,10 @@ function createRequest(body: unknown, headers?: Record<string, string>) {
   });
 }
 
-describe("POST /api/contact", () => {
-  beforeEach(() => {
+describe("POST /api/contact", () =>
+{
+  beforeEach(() =>
+  {
     vi.resetModules();
     sendMock.mockReset();
     resendConstructorMock.mockReset();
@@ -43,13 +51,15 @@ describe("POST /api/contact", () => {
     delete process.env.CONTACT_NOTIFICATION_EMAIL;
   });
 
-  afterEach(() => {
+  afterEach(() =>
+  {
     process.env.RESEND_API_KEY = originalEnv.RESEND_API_KEY;
     process.env.RESEND_FROM_EMAIL = originalEnv.RESEND_FROM_EMAIL;
     process.env.CONTACT_NOTIFICATION_EMAIL = originalEnv.CONTACT_NOTIFICATION_EMAIL;
   });
 
-  it("returns 500 when Resend is not configured", async () => {
+  it("returns 500 when Resend is not configured", async () =>
+  {
     const { POST } = await import("@/app/api/contact/route");
 
     const response = await POST(createRequest({ fields: {} }));
@@ -59,7 +69,8 @@ describe("POST /api/contact", () => {
     });
   });
 
-  it("returns 500 when notification email is missing", async () => {
+  it("returns 500 when notification email is missing", async () =>
+  {
     process.env.RESEND_API_KEY = "test-api-key";
     process.env.RESEND_FROM_EMAIL = "noreply@example.com";
 
@@ -72,7 +83,8 @@ describe("POST /api/contact", () => {
     });
   });
 
-  it("sends an email with contact payload", async () => {
+  it("sends an email with contact payload", async () =>
+  {
     process.env.RESEND_API_KEY = "test-api-key";
     process.env.RESEND_FROM_EMAIL = "noreply@example.com";
     process.env.CONTACT_NOTIFICATION_EMAIL = "inbox@example.com";
@@ -142,7 +154,8 @@ describe("POST /api/contact", () => {
     expect(autoResponse.html).toContain("制作パートナーについて");
   });
 
-  it("returns 400 for malformed payloads", async () => {
+  it("returns 400 for malformed payloads", async () =>
+  {
     process.env.RESEND_API_KEY = "test-api-key";
     process.env.RESEND_FROM_EMAIL = "noreply@example.com";
     process.env.CONTACT_NOTIFICATION_EMAIL = "inbox@example.com";
@@ -154,12 +167,13 @@ describe("POST /api/contact", () => {
     await expect(response.json()).resolves.toMatchObject({ message: "Invalid payload." });
   });
 
-  it("returns 500 when Resend send fails", async () => {
+  it("returns 500 when Resend send fails", async () =>
+  {
     process.env.RESEND_API_KEY = "test-api-key";
     process.env.RESEND_FROM_EMAIL = "noreply@example.com";
     process.env.CONTACT_NOTIFICATION_EMAIL = "inbox@example.com";
 
-    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => { });
     sendMock.mockRejectedValueOnce(new Error("send failed"));
 
     const { POST } = await import("@/app/api/contact/route");

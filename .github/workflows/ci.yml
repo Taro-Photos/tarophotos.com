@@ -221,12 +221,14 @@ jobs:
       - name: Build all packages
         run: pnpm build
 
+      - name: Archive build artifacts
+        run: tar -czf build-output.tar.gz -C apps/web .next
+
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
           name: build-output
-          path: apps/web/.next
-          include-hidden-files: true
+          path: build-output.tar.gz
           retention-days: 7
 
   cdk-check:

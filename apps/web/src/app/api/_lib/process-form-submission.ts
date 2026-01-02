@@ -393,9 +393,34 @@ export async function processFormSubmission(
     }
 
     return Response.json({ message: options.successMessage });
+
   } catch (error)
   {
     console.error(`${options.formKey} email send failed`, error);
-    return Response.json({ message: "Failed to send email." }, { status: 500 });
+
+    // Enhanced logging for SES errors
+    if (error && typeof error === "object" && "name" in error)
+    {
+      const err = error as { name: string; message: string };
+      console.error(`SES Error Name: ${err.name}, Message: ${err.message}`);
+
+      if (err.name === "MessageRejected")
+      {
+        return Response.json({ message: "Email delivery failed: Address not verified or spam detected.", error: err.message }, { status: 500 });
+      }
+      if (err.name === "AccountSendingPausedException")
+      {
+        return Response.json({ message: "Email delivery failed: Account sending paused.", error: err.message }, { status: 500 });
+      }
+      if (err.name === "AccessDeniedException")
+      {
+        return Response.json({ message: "Email delivery failed: Access denied. Check IAM permissions.", error: err.message }, { status: 500 });
+      }
+    }
+
+    return Response.json({
+      message: "Failed to send email.",
+      error: error instanceof Error ? error.message : "Unknown error"
+    }, { status: 500 });
   }
 }

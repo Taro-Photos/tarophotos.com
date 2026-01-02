@@ -1,47 +1,48 @@
 [
   {
     "key": "category",
-    "label": "お問い合わせ種別",
+    "label": "Subject",
     "type": "select",
     "required": true,
     "options": [
-      "制作パートナーについて",
-      "メディア・出演依頼",
-      "撮影予約以外のご相談",
-      "その他"
+      "General Inquiry",
+      "Booking / Commission",
+      "Print Sales",
+      "Collaboration",
+      "Other"
     ]
   },
   {
     "key": "name",
-    "label": "お名前",
+    "label": "Name",
     "type": "text",
     "required": true
   },
   {
     "key": "email",
-    "label": "メールアドレス",
+    "label": "Email",
     "type": "email",
     "required": true
   },
   {
     "key": "company",
-    "label": "所属/団体名",
+    "label": "Company / Organization",
     "type": "text",
     "required": false
   },
   {
     "key": "message",
-    "label": "お問い合わせ内容",
+    "label": "Message",
     "type": "textarea",
     "required": true
   },
   {
     "key": "agree",
-    "label": "プライバシーポリシーへの同意",
+    "label": "Agreement",
     "type": "checkbox",
     "required": true,
     "options": [
-      "同意する"
+      "I agree to the Privacy Policy"
     ]
   }
 ]

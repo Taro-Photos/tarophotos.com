@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { contactFields } from "@/app/_content/contact";
 
 type FormStatus = "idle" | "submitting" | "success" | "error";
 
@@ -11,23 +12,20 @@ export default function ContactForm() {
 
   const validate = (formData: FormData) => {
     const newErrors: Record<string, string> = {};
-    const name = formData.get("name") as string;
-    const email = formData.get("email") as string;
-    const message = formData.get("message") as string;
+    
+    contactFields.forEach((field) => {
+      const value = formData.get(field.key) as string;
+      
+      if (field.required) {
+        if (!value || (typeof value === 'string' && !value.trim())) {
+           newErrors[field.key] = "Please fill out this field.";
+        }
+      }
 
-    if (!name?.trim()) {
-      newErrors.name = "Please fill out this field.";
-    }
-
-    if (!email?.trim()) {
-      newErrors.email = "Please fill out this field.";
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      newErrors.email = "Please enter a valid email address.";
-    }
-
-    if (!message?.trim()) {
-      newErrors.message = "Please fill out this field.";
-    }
+      if (field.type === "email" && value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+        newErrors[field.key] = "Please enter a valid email address.";
+      }
+    });
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -44,18 +42,22 @@ export default function ContactForm() {
     setStatus("submitting");
     setErrorMessage("");
 
-    const data = {
-      name: formData.get("name"),
-      email: formData.get("email"),
-      subject: formData.get("subject"),
-      message: formData.get("message"),
-      fields: {
-        name: formData.get("name"),
-        email: formData.get("email"),
-        category: formData.get("subject"),
-        message: formData.get("message"),
-      },
-    };
+    const data: Record<string, any> = {};
+    const fields: Record<string, any> = {};
+
+    contactFields.forEach((field) => {
+       const value = formData.get(field.key);
+       data[field.key] = value;
+       fields[field.key] = value;
+    });
+
+    // Backwards compatibility for templates expecting specific top-level keys if any
+    // data.name = formData.get("name");
+    // data.email = formData.get("email");
+    // data.message = formData.get("message");
+    // data.subject = formData.get("category"); // Mapped from category
+    data.fields = fields;
+
 
     try {
       const response = await fetch("/api/contact", {
@@ -103,77 +105,72 @@ export default function ContactForm() {
         </div>
       )}
       
-      <div>
-        <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wider">
-          Name
-        </label>
-        <input
-          type="text"
-          id="name"
-          name="name"
-          className={getInputClassName("name")}
-          placeholder="Your Name"
-          disabled={status === "submitting"}
-        />
-        {errors.name && (
-          <p className="mt-1 text-sm text-red-500">{errors.name}</p>
-        )}
-      </div>
-      <div>
-        <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wider">
-          Email
-        </label>
-        <input
-          type="email"
-          id="email"
-          name="email"
-          className={getInputClassName("email")}
-          placeholder="your@email.com"
-          disabled={status === "submitting"}
-        />
-        {errors.email && (
-          <p className="mt-1 text-sm text-red-500">{errors.email}</p>
-        )}
-      </div>
-      <div>
-        <label htmlFor="subject" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wider">
-          Subject
-        </label>
-        <div className="relative">
-          <select
-            id="subject"
-            name="subject"
-            className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 bg-white dark:bg-black focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-white transition-colors appearance-none cursor-pointer"
-            disabled={status === "submitting"}
-          >
-            <option value="general">General Inquiry</option>
-            <option value="booking">Booking / Commission</option>
-            <option value="print">Print Sales</option>
-            <option value="collaboration">Collaboration</option>
-          </select>
-          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-500">
-            <svg className="h-4 w-4 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-              <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
-            </svg>
-          </div>
+      {contactFields.map((field) => (
+        <div key={field.key}>
+          <label htmlFor={field.key} className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wider">
+            {field.label} {field.required && <span className="text-red-500">*</span>}
+          </label>
+          
+          {field.type === "textarea" ? (
+             <textarea
+              id={field.key}
+              name={field.key}
+              rows={6}
+              className={getInputClassName(field.key)}
+              placeholder={field.label}
+              disabled={status === "submitting"}
+            />
+          ) : field.type === "select" ? (
+             <div className="relative">
+              <select
+                id={field.key}
+                name={field.key}
+                className={`w-full px-4 py-3 border border-gray-300 dark:border-gray-700 bg-white dark:bg-black focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-white transition-colors appearance-none cursor-pointer`}
+                disabled={status === "submitting"}
+                defaultValue=""
+              >
+                <option value="" disabled>Select an option</option>
+                {field.options?.map((opt) => (
+                  <option key={opt} value={opt}>{opt}</option>
+                ))}
+              </select>
+               <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-500">
+                <svg className="h-4 w-4 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                  <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+                </svg>
+              </div>
+            </div>
+          ) : field.type === "checkbox" ? (
+             <div className="flex items-center space-x-3">
+               <input
+                 type="checkbox"
+                 id={field.key}
+                 name={field.key}
+                 value={field.options?.[0] || "yes"}
+                 className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
+                 disabled={status === "submitting"}
+               />
+               <label htmlFor={field.key} className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                 {field.options?.[0]}
+               </label>
+             </div>
+          ) : (
+            <input
+              type={field.type}
+              id={field.key}
+              name={field.key}
+              className={getInputClassName(field.key)}
+              placeholder={field.label}
+              disabled={status === "submitting"}
+            />
+          )}
+
+          {errors[field.key] && (
+            <p className="mt-1 text-sm text-red-500">{errors[field.key]}</p>
+          )}
         </div>
-      </div>
-      <div>
-        <label htmlFor="message" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wider">
-          Message
-        </label>
-        <textarea
-          id="message"
-          name="message"
-          rows={6}
-          className={getInputClassName("message")}
-          placeholder="How can I help you?"
-          disabled={status === "submitting"}
-        ></textarea>
-        {errors.message && (
-          <p className="mt-1 text-sm text-red-500">{errors.message}</p>
-        )}
-      </div>
+      ))}
+
       <button
         type="submit"
         disabled={status === "submitting"}

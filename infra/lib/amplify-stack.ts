@@ -134,6 +134,21 @@ export class AmplifyStack extends cdk.Stack
                     name: '_CUSTOM_IMAGE',
                     value: 'amplify:al2023',
                 },
+                {
+                    name: 'SES_REGION',
+                    value: process.env.SES_REGION || 'us-west-2',
+                },
+                {
+                    name: 'SES_FROM_EMAIL',
+                    value: process.env.SES_FROM_EMAIL || 'noreply@tarophotos.com',
+                },
+                {
+                    name: 'SES_TO_EMAIL',
+                    value: process.env.SES_TO_EMAIL || 'yutaroshirai@gmail.com',
+                },
+                // AWS Credentials should ideally be managed via IAM roles or Secrets Manager
+                // Passing them as env vars here purely for the runtime to pick them up if role-based access is not used.
+                // Assuming standard AWS_ACCESS_KEY_ID/SECRET are available in the deployment environment.
             ],
         });
 

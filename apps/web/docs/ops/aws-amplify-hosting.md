@@ -17,9 +17,9 @@ _Last updated: September 27, 2025_
    - The AWS sample template includes a `backend` phase with `npx ampx pipeline-deploy`. We intentionally omit that block because this project hosts a frontend-only Next.js app and does not provision Amplify backend resources. Reintroduce the backend phase if we later adopt Amplify-managed APIs, Auth, or Storage.
    - We cache `node_modules` and `.next/cache` by default. Add the `.npm` cache path only if we switch to `npm ci --cache .npm` to avoid persisting empty directories between builds.
 3. **Environment variables**
-   - Resend credentials (use production keys in Amplify, sandbox keys locally):
-     - `RESEND_API_KEY` — Secret API key created in the Resend dashboard.
-     - `RESEND_FROM_EMAIL` — Verified sender address used for all form notifications (e.g. `noreply@taro.photos`).
+   - AWS SES credentials (managed via IAM role in Amplify):
+     - `SES_REGION` — AWS Region for SES (e.g. `ap-northeast-1`).
+     - `SES_FROM_EMAIL` — Verified sender address used for all form notifications (e.g. `noreply@taro.photos`).
    - Notification recipients:
      - `BOOKING_NOTIFICATION_EMAIL` — Internal inbox for booking inquiries.
      - `CONTACT_NOTIFICATION_EMAIL` — Internal inbox for general contact inquiries.
@@ -27,7 +27,7 @@ _Last updated: September 27, 2025_
      - `NEXT_PUBLIC_PRIMARY_CONTACT_EMAIL` — Email surfaced in the site footer, about page, and legal notices.
      - `NEXT_PUBLIC_DELIVERY_SUPPORT_EMAIL` — Email shown on delivery support sections.
    - `NEXT_PUBLIC_ALLOW_DARK_THEME` — Set to `true` (or `1`) when the deployment should follow the visitor's OS dark-mode preference. Leave unset to force light mode across the site.
-   - Keep the same keys in `.env.local` for local testing. Resend にはテスト用のサンドボックスドメインがあるため、本番用ドメインを使わずに送信確認が可能です。
+   - Keep the same keys in `.env.local` for local testing. ローカル開発では AWS CLI のプロファイル (`~/.aws/credentials`) が自動的に使用されます。テスト時は `SES_FROM_EMAIL` と `CONTACT_NOTIFICATION_EMAIL` の両方が Verified Identity である必要があります（サンドボックス環境の場合）。
    - Any time you change these values, trigger a redeploy so Amplify rebuilds with the new environment.
 4. **Save & deploy**
    - Amplify installs dependencies via `npm ci`, runs the linter (`npm run lint`), then executes `npm run build`. Build output in `.next` is uploaded automatically for SSR/App Router hosting.

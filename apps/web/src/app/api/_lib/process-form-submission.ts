@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { Resend } from "resend";
+import { SESClient, SendEmailCommand } from "@aws-sdk/client-ses";
 
 import type { FormField } from "@/app/_content/contact";
 
@@ -51,30 +51,26 @@ type EmailContent = {
   replyTo?: string;
 };
 
-function getResendConfig()
+function getSesConfig()
 {
   return {
-    apiKey: process.env.RESEND_API_KEY,
-    fromEmail: process.env.RESEND_FROM_EMAIL,
+    region: process.env.SES_REGION || "ap-northeast-1",
+    fromEmail: process.env.SES_FROM_EMAIL || process.env.CONTACT_FROM_EMAIL,
   };
 }
 
-let resendClient: Resend | null = null;
+let sesClient: SESClient | null = null;
 
-function getResendClient(): Resend | null
+function getSesClient(): SESClient
 {
-  const { apiKey } = getResendConfig();
-  if (!apiKey)
+  const { region } = getSesConfig();
+
+  if (!sesClient)
   {
-    return null;
+    sesClient = new SESClient({ region });
   }
 
-  if (!resendClient)
-  {
-    resendClient = new Resend(apiKey);
-  }
-
-  return resendClient;
+  return sesClient;
 }
 
 function escapeHtml(value: string)
@@ -239,16 +235,61 @@ function buildEmailContent(
   };
 }
 
+async function sendSesEmail({
+  to,
+  from,
+  subject,
+  html,
+  text,
+  replyTo,
+}: {
+  to: string;
+  from: string;
+  subject: string;
+  html: string;
+  text: string;
+  replyTo?: string;
+})
+{
+  const client = getSesClient();
+
+  const command = new SendEmailCommand({
+    Source: from,
+    Destination: {
+      ToAddresses: [to],
+    },
+    Message: {
+      Subject: {
+        Data: subject,
+        Charset: "UTF-8",
+      },
+      Body: {
+        Text: {
+          Data: text,
+          Charset: "UTF-8",
+        },
+        Html: {
+          Data: html,
+          Charset: "UTF-8",
+        },
+      },
+    },
+    ReplyToAddresses: replyTo ? [replyTo] : [],
+  });
+
+  return client.send(command);
+}
+
 export async function processFormSubmission(
   request: NextRequest,
   options: FormSubmissionOptions,
 )
 {
-  const { apiKey, fromEmail } = getResendConfig();
+  const { fromEmail } = getSesConfig();
 
-  if (!apiKey || !fromEmail)
+  if (!fromEmail)
   {
-    console.error("Resend is not fully configured");
+    console.error("SES is not fully configured (missing SES_FROM_EMAIL)");
     return Response.json({ message: "Email delivery is not configured." }, { status: 500 });
   }
 
@@ -294,29 +335,19 @@ export async function processFormSubmission(
 
   try
   {
-    const client = getResendClient();
-
-    if (!client)
-    {
-      console.error("Resend API key is missing at send time");
-      return Response.json({ message: "Email delivery is not configured." }, { status: 500 });
-    }
-
-    const { data: primaryData, error: primaryError } = await client.emails.send({
-      from: fromEmail,
+    const output = await sendSesEmail({
       to: options.notificationEmail,
+      from: fromEmail,
       subject: emailContent.subject,
       html: emailContent.html,
       text: emailContent.text,
-      ...(emailContent.replyTo ? { reply_to: emailContent.replyTo } : {}),
+      replyTo: emailContent.replyTo,
     });
 
-    if (primaryError)
-    {
-      throw primaryError;
-    }
-
-    console.info(`[forms:${options.formKey}] email sent to ${options.notificationEmail}`, primaryData);
+    console.info(
+      `[forms:${options.formKey}] email sent to ${options.notificationEmail}`,
+      { messageId: output.MessageId },
+    );
 
     const autoResponseConfig = options.autoResponse;
 
@@ -346,22 +377,17 @@ export async function processFormSubmission(
         const autoHtml = resolveMessage(autoResponseConfig.html, payload, context);
         const autoText = resolveMessage(autoResponseConfig.text, payload, context);
 
-        const { data: autoData, error: autoError } = await client.emails.send({
-          from: fromEmail,
+        const autoOutput = await sendSesEmail({
           to: recipientEmail,
+          from: fromEmail,
           subject: autoSubject,
           html: autoHtml,
           text: autoText,
         });
 
-        if (autoError)
-        {
-          throw autoError;
-        }
-
         console.info(
           `[forms:${options.formKey}] auto-response sent to ${recipientEmail}`,
-          autoData,
+          { messageId: autoOutput.MessageId },
         );
       }
     }

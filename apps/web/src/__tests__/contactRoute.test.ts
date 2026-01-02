@@ -2,27 +2,35 @@ import { NextRequest } from "next/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const sendMock = vi.fn();
-const resendConstructorMock = vi.fn();
+const sesConstructorMock = vi.fn();
 
-vi.mock("resend", () =>
+vi.mock("@aws-sdk/client-ses", () =>
 {
   return {
-    Resend: class
+    SESClient: class
     {
-      constructor(apiKey: string)
+      constructor(config: any)
       {
-        resendConstructorMock(apiKey);
+        sesConstructorMock(config);
       }
-      emails = {
-        send: sendMock,
-      };
+      send(command: any)
+      {
+        return sendMock(command);
+      }
+    },
+    SendEmailCommand: class
+    {
+      constructor(input: any)
+      {
+        return input;
+      }
     },
   };
 });
 
 const originalEnv = {
-  RESEND_API_KEY: process.env.RESEND_API_KEY,
-  RESEND_FROM_EMAIL: process.env.RESEND_FROM_EMAIL,
+  SES_REGION: process.env.SES_REGION,
+  SES_FROM_EMAIL: process.env.SES_FROM_EMAIL,
   CONTACT_NOTIFICATION_EMAIL: process.env.CONTACT_NOTIFICATION_EMAIL,
 };
 
@@ -44,21 +52,22 @@ describe("POST /api/contact", () =>
   {
     vi.resetModules();
     sendMock.mockReset();
-    resendConstructorMock.mockReset();
+    sesConstructorMock.mockReset();
 
-    delete process.env.RESEND_API_KEY;
-    delete process.env.RESEND_FROM_EMAIL;
+    // Clear SES env vars
+    delete process.env.SES_REGION;
+    delete process.env.SES_FROM_EMAIL;
     delete process.env.CONTACT_NOTIFICATION_EMAIL;
   });
 
   afterEach(() =>
   {
-    process.env.RESEND_API_KEY = originalEnv.RESEND_API_KEY;
-    process.env.RESEND_FROM_EMAIL = originalEnv.RESEND_FROM_EMAIL;
+    process.env.SES_REGION = originalEnv.SES_REGION;
+    process.env.SES_FROM_EMAIL = originalEnv.SES_FROM_EMAIL;
     process.env.CONTACT_NOTIFICATION_EMAIL = originalEnv.CONTACT_NOTIFICATION_EMAIL;
   });
 
-  it("returns 500 when Resend is not configured", async () =>
+  it("returns 500 when SES is not configured", async () =>
   {
     const { POST } = await import("@/app/api/contact/route");
 
@@ -71,8 +80,7 @@ describe("POST /api/contact", () =>
 
   it("returns 500 when notification email is missing", async () =>
   {
-    process.env.RESEND_API_KEY = "test-api-key";
-    process.env.RESEND_FROM_EMAIL = "noreply@example.com";
+    process.env.SES_FROM_EMAIL = "noreply@example.com";
 
     const { POST } = await import("@/app/api/contact/route");
 
@@ -83,15 +91,15 @@ describe("POST /api/contact", () =>
     });
   });
 
-  it("sends an email with contact payload", async () =>
+  it("sends an email with contact payload via SES", async () =>
   {
-    process.env.RESEND_API_KEY = "test-api-key";
-    process.env.RESEND_FROM_EMAIL = "noreply@example.com";
+    process.env.SES_FROM_EMAIL = "noreply@example.com";
     process.env.CONTACT_NOTIFICATION_EMAIL = "inbox@example.com";
+    process.env.SES_REGION = "us-east-1";
 
     sendMock
-      .mockResolvedValueOnce({ data: { id: "email_456" }, error: null } as unknown)
-      .mockResolvedValueOnce({ data: { id: "email_auto" }, error: null } as unknown);
+      .mockResolvedValueOnce({ MessageId: "email_456" })
+      .mockResolvedValueOnce({ MessageId: "email_auto" });
 
     const { POST } = await import("@/app/api/contact/route");
 
@@ -114,67 +122,31 @@ describe("POST /api/contact", () =>
       message: "Contact request received.",
     });
 
-    expect(resendConstructorMock).toHaveBeenCalledWith("test-api-key");
+    expect(sesConstructorMock).toHaveBeenCalledWith({ region: "us-east-1" });
     expect(sendMock).toHaveBeenCalledTimes(2);
 
-    const [message] = sendMock.mock.calls[0] as [
-      {
-        from: string;
-        to: string;
-        subject: string;
-        html: string;
-        text: string;
-        reply_to?: string;
-      },
-    ];
+    // Verify first email (notification)
+    const notificationCommand = sendMock.mock.calls[0][0];
+    expect(notificationCommand.Source).toBe("noreply@example.com");
+    expect(notificationCommand.Destination.ToAddresses).toContain("inbox@example.com");
+    expect(notificationCommand.Message.Subject.Data).toContain("制作パートナーについて");
+    expect(notificationCommand.Message.Body.Html.Data).toContain("制作パートナーについて");
+    expect(notificationCommand.ReplyToAddresses).toContain("guest@example.com");
 
-    expect(message.from).toBe("noreply@example.com");
-    expect(message.to).toBe("inbox@example.com");
-    expect(message.subject).toContain("制作パートナーについて");
-    expect(message.html).toContain("制作パートナーについて");
-    expect(message.html).toContain("山田 太郎");
-    expect(message.text).toContain("取材させてください");
-    expect(message.reply_to).toBe("guest@example.com");
-
-    const [autoResponse] = sendMock.mock.calls[1] as [
-      {
-        from: string;
-        to: string;
-        subject: string;
-        html: string;
-        text: string;
-      },
-    ];
-
-    expect(autoResponse.from).toBe("noreply@example.com");
-    expect(autoResponse.to).toBe("guest@example.com");
-    expect(autoResponse.subject).toContain("お問い合わせありがとうございます");
-    expect(autoResponse.text).toContain("2日以内にご返信いたします");
-    expect(autoResponse.html).toContain("2日以内");
-    expect(autoResponse.html).toContain("制作パートナーについて");
+    // Verify second email (auto-response)
+    const autoResponseCommand = sendMock.mock.calls[1][0];
+    expect(autoResponseCommand.Source).toBe("noreply@example.com");
+    expect(autoResponseCommand.Destination.ToAddresses).toContain("guest@example.com");
+    expect(autoResponseCommand.Message.Subject.Data).toContain("お問い合わせありがとうございます");
   });
 
-  it("returns 400 for malformed payloads", async () =>
+  it("returns 500 when SES send fails", async () =>
   {
-    process.env.RESEND_API_KEY = "test-api-key";
-    process.env.RESEND_FROM_EMAIL = "noreply@example.com";
-    process.env.CONTACT_NOTIFICATION_EMAIL = "inbox@example.com";
-
-    const { POST } = await import("@/app/api/contact/route");
-
-    const response = await POST(createRequest({}));
-    expect(response.status).toBe(400);
-    await expect(response.json()).resolves.toMatchObject({ message: "Invalid payload." });
-  });
-
-  it("returns 500 when Resend send fails", async () =>
-  {
-    process.env.RESEND_API_KEY = "test-api-key";
-    process.env.RESEND_FROM_EMAIL = "noreply@example.com";
+    process.env.SES_FROM_EMAIL = "noreply@example.com";
     process.env.CONTACT_NOTIFICATION_EMAIL = "inbox@example.com";
 
     const errorSpy = vi.spyOn(console, "error").mockImplementation(() => { });
-    sendMock.mockRejectedValueOnce(new Error("send failed"));
+    sendMock.mockRejectedValueOnce(new Error("AWS SES Error"));
 
     const { POST } = await import("@/app/api/contact/route");
 

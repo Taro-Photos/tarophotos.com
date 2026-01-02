@@ -17,8 +17,7 @@
 ## ④ コンポーネント仕様
 
 - `Form`：フィールドバリデーション/必須・任意の明示
-- `Form`：Resend の認証情報（`RESEND_API_KEY` / `RESEND_FROM_EMAIL`）と通知先メール（`BOOKING_NOTIFICATION_EMAIL` / `CONTACT_NOTIFICATION_EMAIL`）は Amplify と `.env.local` の両方で管理
-- `Form`：Resend の認証情報（`RESEND_API_KEY` / `RESEND_FROM_EMAIL`）と通知先メール（`BOOKING_NOTIFICATION_EMAIL` / `CONTACT_NOTIFICATION_EMAIL`）は Amplify と `.env.local` の両方で管理。送信者にも自動返信メールを返して受付完了を伝える。
+- `Form`：SES の設定（`SES_REGION` / `SES_FROM_EMAIL`）と通知先メール（`BOOKING_NOTIFICATION_EMAIL` / `CONTACT_NOTIFICATION_EMAIL`）は Amplify と `.env.local` の両方で管理。送信者にも自動返信メールを返して受付完了を伝える。
 - `CalendarConnect`（任意）
 - `PrivacyNotice`（個人情報の取り扱い）
 

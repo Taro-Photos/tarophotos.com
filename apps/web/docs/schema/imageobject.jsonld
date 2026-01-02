@@ -1,0 +1,13 @@
+{
+  "@context": "https://schema.org",
+  "@type": "ImageObject",
+  "name": "Series Title – Key Visual",
+  "contentUrl": "https://tarophotos.com/images/series/kv.avif",
+  "creator": {
+    "@type": "Person",
+    "name": "白井 悠太郎"
+  },
+  "contentLocation": "Tokyo, Japan",
+  "datePublished": "2025-01-15",
+  "license": "All rights reserved"
+}

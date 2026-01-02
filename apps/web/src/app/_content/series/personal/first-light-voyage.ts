@@ -1,0 +1,185 @@
+import type { SeriesDetails } from '../types';
+
+export const firstLightVoyage: SeriesDetails = {
+    slug: "first-light-voyage",
+  published: false,
+    category: "Personal",
+    title: "First Light Voyage",
+    year: 2025,
+    location: "Choshi & Tokyo",
+    palette: "color",
+    focus: "people",
+    synopsis: "初日の出から通勤前の都市が目覚めるまでの光を追ったモーニングジャーニー。",
+    lead: "夜明け前の九十九里と都内の動線を巡り、日が昇るにつれて変わる空気感と人の流れを収集したシリーズ。",
+    story:
+      "千葉の海岸で初日の出を迎えた後、東京駅や浜松町、渋谷の朝活コミュニティへと移動し、光の角度と人のテンポが連続して変化する時間帯を追いかけました。露出とホワイトバランスを細かく調整しながら、柔らかい朝のハイライトを残しています。",
+    tags: ["Morning", "People", "Travel"],
+    cover: {
+      src: "/content/series/personal/first-light-voyage/first-light-voyage-01.webp",
+      alt: "九十九里浜で迎えた初日の出",
+      width: 2560,
+      height: 1707,
+    },
+    heroImage: {
+      src: "/content/series/personal/first-light-voyage/first-light-voyage-02.webp",
+      alt: "九十九里浜で迎えた初日の出 2",
+      width: 2560,
+      height: 1707,
+    },
+    gallery: [
+      {
+        src: "/content/series/personal/first-light-voyage/first-light-voyage-01.webp",
+        alt: "九十九里浜で迎えた初日の出",
+        width: 2560,
+        height: 1707,
+        contentLocation: "Kujukuri Coast, Chiba, Japan",
+        datePublished: "2025-01-01",
+        caption: "水平線が最初の光を抱きしめる。",
+        statement:
+          "夜明け直前から潮位を確かめて立ち位置を決め、波のリズムと太陽の角度が揃う瞬間を待ちました。霜で曇る前玉をこまめに拭き、空と海のグラデーションを丁寧に残しています。",
+      },
+      {
+        src: "/content/series/personal/first-light-voyage/first-light-voyage-02.webp",
+        alt: "九十九里浜で迎えた初日の出 2",
+        width: 2560,
+        height: 1707,
+        contentLocation: "Kujukuri Coast, Chiba, Japan",
+        datePublished: "2025-01-01",
+        caption: "砂浜に黄金のベールが広がっていく。",
+        statement:
+          "観覧者の背中に逆光が落ちる位置まで移動し、フレアを抑えるため露出を-0.7EVに調整しました。波が寄せるテンポを数えながら、足跡の流れが途切れないタイミングで切り取っています。",
+      },
+      {
+        src: "/content/series/personal/first-light-voyage/first-light-voyage-03.webp",
+        alt: "九十九里浜で迎えた初日の出 3",
+        width: 2560,
+        height: 1707,
+        contentLocation: "Kujukuri Coast, Chiba, Japan",
+        datePublished: "2025-01-01",
+        caption: "光の道に新年の足跡が刻まれる。",
+        statement:
+          "海面の反射を強調したくてハーフNDを使い、空の輝度を落として光の帯を浮かび上がらせました。砂のディテールが潰れないよう三脚を低く構え、人影が重ならない瞬間を狙っています。",
+      },
+      {
+        src: "/content/series/personal/first-light-voyage/first-light-voyage-04.webp",
+        alt: "九十九里浜で迎えた初日の出 4",
+        width: 2560,
+        height: 1707,
+        contentLocation: "Kujukuri Coast, Chiba, Japan",
+        datePublished: "2025-01-01",
+        caption: "波しぶきが新年の空気を冷たく揺らす。",
+        statement:
+          "シャッター速度を1/250秒に上げ、飛沫の形を残しつつ朝焼けの色を保ちました。風向きを読みながら潮を被らない距離を確保し、望遠で引き寄せています。",
+      },
+      {
+        src: "/content/series/personal/first-light-voyage/first-light-voyage-05.webp",
+        alt: "始発直後の東京駅周辺",
+        width: 2560,
+        height: 1707,
+        contentLocation: "Tokyo Station, Tokyo, Japan",
+        datePublished: "2025-01-05",
+        caption: "丸の内の煉瓦に朝の朱が差し込む。",
+        statement:
+          "駅舎のライトと朝焼けのバランスを保つため、ホワイトバランスを太陽光に固定してRAW現像前提で露出を整えました。三脚禁止エリアなので胸の高さで構え、ブレないギリギリの速度を維持しています。",
+      },
+      {
+        src: "/content/series/personal/first-light-voyage/first-light-voyage-06.webp",
+        alt: "始発直後の東京駅周辺 2",
+        width: 2560,
+        height: 1707,
+        contentLocation: "Tokyo Station, Tokyo, Japan",
+        datePublished: "2025-01-05",
+        caption: "石畳の影が目覚めのテンポを刻む。",
+        statement:
+          "影の角度が最も美しく伸びる位置まで歩き、路面の湿りが反射する時間帯を選びました。人の歩みが自然に写るよう連写を使わず、呼吸を合わせたワンショットに集中しています。",
+      },
+      {
+        src: "/content/series/personal/first-light-voyage/first-light-voyage-07.webp",
+        alt: "始発直後の東京駅周辺 3",
+        width: 2560,
+        height: 1707,
+        contentLocation: "Tokyo Station, Tokyo, Japan",
+        datePublished: "2025-01-05",
+        caption: "駅舎のアーチを朝光が縁取る。",
+        statement:
+          "アーチのラインが歪まない焦点距離を選び、中央に立って左右のバランスを取りました。空の淡いブルーと窓明かりの差を残すため露出を少しアンダーに設定しています。",
+      },
+      {
+        src: "/content/series/personal/first-light-voyage/first-light-voyage-08.webp",
+        alt: "浜松町の高架と街路に差す朝日",
+        width: 2560,
+        height: 1707,
+        contentLocation: "Hamamatsucho, Tokyo, Japan",
+        datePublished: "2025-01-07",
+        caption: "高架の影が街路に柔らかな呼吸を残す。",
+        statement:
+          "朝日が首都高の梁に沿って流れる角度を前日ロケで確認し、ローアングルからラインを拾いました。車列が消える一瞬を待ち、ISOを上げすぎない範囲でシャッター速度を確保しています。",
+      },
+      {
+        src: "/content/series/personal/first-light-voyage/first-light-voyage-09.webp",
+        alt: "浜松町の高架と街路に差す朝日 2",
+        width: 2048,
+        height: 2560,
+        contentLocation: "Hamamatsucho, Tokyo, Japan",
+        datePublished: "2025-01-07",
+        caption: "逆光に浮かぶ歩道橋のシルエット。",
+        statement:
+          "歩道橋の階段を駆け上がり、逆光で人物が浮かぶ位置を探りました。シャッターを1/500秒に固定してブレを抑え、光のフレアをほんの少し残すことで朝の眩しさを表現しています。",
+      },
+      {
+        src: "/content/series/personal/first-light-voyage/first-light-voyage-10.webp",
+        alt: "浜松町の高架と街路に差す朝日 3",
+        width: 2560,
+        height: 1707,
+        contentLocation: "Hamamatsucho, Tokyo, Japan",
+        datePublished: "2025-01-07",
+        caption: "首都高の陰が街路を静かに区切る。",
+        statement:
+          "交通量が増える前に信号のサイクルを見極め、車列が途切れる瞬間を待ちました。アスファルトの質感を出すため露出をマイナス補正し、光と影の境界を際立たせています。",
+      },
+      {
+        src: "/content/series/personal/first-light-voyage/first-light-voyage-11.webp",
+        alt: "渋谷の朝活コミュニティ",
+        width: 2560,
+        height: 1707,
+        contentLocation: "Shibuya, Tokyo, Japan",
+        datePublished: "2025-01-12",
+        caption: "朝活の輪が会場の温度を上げていく。",
+        statement:
+          "コミュニティの空気感を壊さないよう距離を保ち、85mmで圧縮して場の熱量を拾いました。自然光と室内照明の色差を整えるためカスタムWBを設定しています。",
+      },
+      {
+        src: "/content/series/personal/first-light-voyage/first-light-voyage-12.webp",
+        alt: "渋谷の朝活コミュニティ 2",
+        width: 1707,
+        height: 2560,
+        contentLocation: "Shibuya, Tokyo, Japan",
+        datePublished: "2025-01-12",
+        caption: "窓辺の光が会話をやさしく照らす。",
+        statement:
+          "窓から差す光が揃うタイミングを待ち、露出を-0.3EVにして肌のハイライトを守りました。参加者同士の視線が交わる瞬間を狙い、連写ではなく一枚に集中しています。",
+      },
+      {
+        src: "/content/series/personal/first-light-voyage/first-light-voyage-13.webp",
+        alt: "渋谷の朝活コミュニティ 3",
+        width: 2560,
+        height: 1707,
+        contentLocation: "Shibuya, Tokyo, Japan",
+        datePublished: "2025-01-12",
+        caption: "ペンとノートが光に染まり始業を告げる。",
+        statement:
+          "テーブル上の小物のリズムを意識し、斜め上から俯瞰気味に構図を決定しました。ISOを少し上げてシャッター速度を確保し、自然な手の動きを残しています。",
+      },
+    ],
+    exif: [
+      { label: "Camera", value: "Sony α1 II (ILCE-1M2)" },
+      { label: "Lens", value: "FE 24-70mm F2.8 GM II" },
+      { label: "Settings", value: "1/200s · F2.8 · ISO 800" },
+    ],
+    relatedCta: {
+      heading: "撮影のご相談はこちら",
+      body: "シリーズに合わせたロケーション提案やスケジュール設計から撮影・納品まで一貫して対応します。",
+      href: "/services",
+      label: "Servicesを見る",
+    },
+  };

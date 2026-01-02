@@ -1,0 +1,82 @@
+import type { SeriesDetails } from '../types';
+
+export const neonCascades: SeriesDetails = {
+    slug: "neon-cascades",
+  published: false,
+    category: "Personal",
+    title: "Neon Cascades",
+    year: 2024,
+    location: "Shibuya",
+    palette: "color",
+    focus: "urban",
+    synopsis: "渋谷の坂と交差点を巡り、ネオンが降り注ぐ瞬間を切り取ったナイトシリーズ。",
+    lead: "スクランブル交差点から宇田川町までを歩き、街の反射と人の流れが交わる瞬間を集中的に記録しました。",
+    story:
+      "雨上がりを狙って撮影し、路面の反射にネオンが映るタイミングで1/30s前後に設定。流し撮りと静止の対比で都市のリズムを演出しています。",
+    tags: ["Urban", "Night", "Motion"],
+    cover: {
+      src: "/content/series/personal/neon-cascades/neon-cascades-01.webp",
+      alt: "渋谷スクランブル交差点の夜景",
+      width: 2560,
+      height: 1707,
+    },
+    heroImage: {
+      src: "/content/series/personal/neon-cascades/neon-cascades-02.webp",
+      alt: "渋谷スクランブル交差点の夜景 2",
+      width: 2560,
+      height: 1707,
+    },
+    gallery: [
+      {
+        src: "/content/series/personal/neon-cascades/neon-cascades-01.webp",
+        alt: "渋谷スクランブル交差点の夜景",
+        width: 2560,
+        height: 1707,
+        contentLocation: "Shibuya, Tokyo, Japan",
+        datePublished: "2024-10-05",
+      },
+      {
+        src: "/content/series/personal/neon-cascades/neon-cascades-02.webp",
+        alt: "渋谷スクランブル交差点の夜景 2",
+        width: 2560,
+        height: 1707,
+        contentLocation: "Shibuya, Tokyo, Japan",
+        datePublished: "2024-10-05",
+      },
+      {
+        src: "/content/series/personal/neon-cascades/neon-cascades-03.webp",
+        alt: "渋谷スクランブル交差点の夜景 3",
+        width: 2560,
+        height: 1707,
+        contentLocation: "Shibuya, Tokyo, Japan",
+        datePublished: "2024-10-05",
+      },
+      {
+        src: "/content/series/personal/neon-cascades/neon-cascades-04.webp",
+        alt: "渋谷スクランブル交差点の夜景 4",
+        width: 2560,
+        height: 1707,
+        contentLocation: "Shibuya, Tokyo, Japan",
+        datePublished: "2024-10-05",
+      },
+      {
+        src: "/content/series/personal/neon-cascades/neon-cascades-05.webp",
+        alt: "渋谷スクランブル交差点の夜景 5",
+        width: 2560,
+        height: 1707,
+        contentLocation: "Shibuya, Tokyo, Japan",
+        datePublished: "2024-10-05",
+      },
+    ],
+    exif: [
+      { label: "Camera", value: "Sony α7 IV (ILCE-7M4)" },
+      { label: "Lens", value: "FE 24-70mm F2.8 GM II" },
+      { label: "Settings", value: "1/30s · F2.8 · ISO 800" },
+    ],
+    relatedCta: {
+      heading: "ナイトスナップのご相談",
+      body: "渋谷エリアの夜間撮影では人流制御や機材制限に合わせたプランニングをご案内します。",
+      href: "/services",
+      label: "Servicesを見る",
+    },
+  };

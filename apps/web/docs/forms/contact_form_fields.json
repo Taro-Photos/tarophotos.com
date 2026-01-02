@@ -1,0 +1,47 @@
+[
+  {
+    "key": "category",
+    "label": "お問い合わせ種別",
+    "type": "select",
+    "required": true,
+    "options": [
+      "制作パートナーについて",
+      "メディア・出演依頼",
+      "撮影予約以外のご相談",
+      "その他"
+    ]
+  },
+  {
+    "key": "name",
+    "label": "お名前",
+    "type": "text",
+    "required": true
+  },
+  {
+    "key": "email",
+    "label": "メールアドレス",
+    "type": "email",
+    "required": true
+  },
+  {
+    "key": "company",
+    "label": "所属/団体名",
+    "type": "text",
+    "required": false
+  },
+  {
+    "key": "message",
+    "label": "お問い合わせ内容",
+    "type": "textarea",
+    "required": true
+  },
+  {
+    "key": "agree",
+    "label": "プライバシーポリシーへの同意",
+    "type": "checkbox",
+    "required": true,
+    "options": [
+      "同意する"
+    ]
+  }
+]

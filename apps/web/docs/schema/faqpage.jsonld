@@ -1,0 +1,22 @@
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "撮影データの納期は？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "通常は5営業日以内。お急ぎはご相談ください。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "権利（著作権/二次利用）は？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "著作権は原則として作者に帰属。用途に応じた利用許諾をご案内します。"
+      }
+    }
+  ]
+}

@@ -1,153 +1,58 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { z } from 'zod';
-import { sendContactEmail } from '@/lib/ses-client';
+import { NextRequest } from "next/server";
 
-/**
- * Contact form request schema
- */
-const ContactRequestSchema = z.object({
-    /** Sender's name */
-    name: z
-        .string()
-        .min(1, 'Name is required')
-        .max(100, 'Name must be 100 characters or less'),
-    /** Sender's email address */
-    email: z
-        .string()
-        .min(1, 'Email is required')
-        .email('Invalid email address'),
-    /** Email subject (optional) */
-    subject: z
-        .string()
-        .max(200, 'Subject must be 200 characters or less')
-        .optional(),
-    /** Message body */
-    message: z
-        .string()
-        .min(1, 'Message is required')
-        .max(5000, 'Message must be 5000 characters or less'),
-    /** Additional recipient(s) (optional) */
-    to: z
-        .union([z.string().email(), z.array(z.string().email())])
-        .optional(),
-});
+import { contactFields } from "@/app/_content/contact";
+import { processFormSubmission } from "@/app/api/_lib/process-form-submission";
 
+const CONTACT_NOTIFICATION_EMAIL = process.env.CONTACT_NOTIFICATION_EMAIL;
 
-/**
- * API Response types
- */
-interface SuccessResponse {
-    success: true;
-    messageId: string;
-}
+const escapeHtml = (value: string) =>
+  value
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
 
-interface ErrorResponse {
-    success: false;
-    error: string;
-    details?: z.ZodIssue[];
-}
+export async function POST(request: NextRequest) {
+  return processFormSubmission(request, {
+    formKey: "contact",
+    displayName: "Contact フォーム",
+    notificationEmail: CONTACT_NOTIFICATION_EMAIL,
+    successMessage: "Contact request received.",
+    missingNotificationMessage: "Contact notification email is not configured.",
+    fieldDefinitions: contactFields,
+    subject: (payload) => {
+      const category = payload.fields.category;
+      const readableCategory = Array.isArray(category) ? category.join(", ") : category;
+      const suffix = readableCategory ? `: ${readableCategory}` : "";
+      return `New contact inquiry${suffix}`;
+    },
+    replyToField: "email",
+    autoResponse: {
+      emailField: "email",
+      nameField: "name",
+      subject: () => "【Taro Photos】お問い合わせありがとうございます",
+      html: (_, context) => {
+        const greeting = context.recipientName ? `${escapeHtml(context.recipientName)} 様` : "";
+        return `<!DOCTYPE html><html><body style="font-family:system-ui,-apple-system,'Segoe UI',sans-serif;line-height:1.7;color:#0f172a;background:#f8fafc;padding:24px;">
+          ${greeting ? `<p>${greeting}</p>` : ""}
+          <p>お問い合わせありがとうございます。</p>
+          <p>以下の内容で受け付けました。担当者が詳細を確認のうえ、<strong>2日以内</strong>にご返信いたします。追加で共有したい事項があれば、本メールに返信してお知らせください。</p>
+          ${context.summaryHtml}
+          <p style="margin-top:24px;font-size:12px;color:#64748b;">本メールは自動送信です。心当たりがない場合はこのまま破棄してください。</p>
+        </body></html>`;
+      },
+      text: (_, context) => {
+        const greeting = context.recipientName ? `${context.recipientName} 様\n\n` : "";
+        return `${greeting}お問い合わせありがとうございます。
 
-type ContactResponse = SuccessResponse | ErrorResponse;
+以下の内容で受け付けました。担当者が詳細を確認のうえ、2日以内にご返信いたします。追加で共有したい事項があれば、本メールに返信してお知らせください。
 
-/**
- * POST /api/contact
- * 
- * Handles contact form submissions and sends emails via AWS SES.
- * 
- * Request body:
- * - name: string (required) - Sender's name
- * - email: string (required) - Sender's email address
- * - subject: string (optional) - Email subject
- * - message: string (required) - Message body
- * - to: string | string[] (optional) - Additional recipient(s)
- * 
- * Response:
- * - 200: { success: true, messageId: string }
- * - 400: { success: false, error: string, details?: ZodIssue[] }
- * - 500: { success: false, error: string }
- */
-export async function POST(
-    request: NextRequest
-): Promise<NextResponse<ContactResponse>> {
-    try {
-        // Parse request body
-        const body = await request.json();
+${context.summaryText}
 
-        // Validate request
-        const validationResult = ContactRequestSchema.safeParse(body);
-        if (!validationResult.success) {
-            return NextResponse.json(
-                {
-                    success: false,
-                    error: 'Validation failed',
-                    details: validationResult.error.issues,
-                },
-                { status: 400 }
-            );
-        }
-
-        const { name, email, subject, message, to } = validationResult.data;
-
-        // Send email
-        const result = await sendContactEmail({
-            name,
-            email,
-            subject,
-            message,
-            to,
-        });
-
-        if (!result.success) {
-            console.error('Failed to send contact email:', result.error);
-            return NextResponse.json(
-                {
-                    success: false,
-                    error: result.error || 'Failed to send email',
-                },
-                { status: 500 }
-            );
-        }
-
-        return NextResponse.json({
-            success: true,
-            messageId: result.messageId!,
-        });
-    } catch (error) {
-        console.error('Contact API error:', error);
-
-        // Handle JSON parse errors
-        if (error instanceof SyntaxError) {
-            return NextResponse.json(
-                {
-                    success: false,
-                    error: 'Invalid JSON in request body',
-                },
-                { status: 400 }
-            );
-        }
-
-        return NextResponse.json(
-            {
-                success: false,
-                error: 'An unexpected error occurred',
-            },
-            { status: 500 }
-        );
-    }
-}
-
-/**
- * OPTIONS /api/contact
- * 
- * Handle CORS preflight requests
- */
-export async function OPTIONS(): Promise<NextResponse> {
-    return new NextResponse(null, {
-        status: 204,
-        headers: {
-            'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Methods': 'POST, OPTIONS',
-            'Access-Control-Allow-Headers': 'Content-Type',
-        },
-    });
+――
+本メールは自動送信です。心当たりがない場合はこのまま破棄してください。`;
+      },
+    },
+  });
 }

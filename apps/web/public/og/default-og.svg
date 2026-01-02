@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="og-gradient" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0%" stop-color="#0a1818" />
+      <stop offset="45%" stop-color="#123f2a" />
+      <stop offset="100%" stop-color="#315f52" />
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="#020505" />
+  <rect width="1200" height="630" fill="url(#og-gradient)" opacity="0.95" />
+  <g fill="#ffffff" opacity="0.2">
+    <rect x="120" y="200" width="180" height="230" rx="20" />
+    <rect x="330" y="170" width="180" height="260" rx="20" />
+    <rect x="540" y="210" width="180" height="220" rx="20" />
+    <rect x="750" y="190" width="180" height="240" rx="20" />
+    <rect x="960" y="150" width="120" height="280" rx="20" />
+  </g>
+  <text x="120" y="140" fill="#f6f5f2" font-family="" font-size="24" letter-spacing="8" opacity="0.8">
+    TARO PHOTOS
+  </text>
+  <text x="120" y="340" fill="#ffffff" font-family="" font-size="86" font-weight="600" letter-spacing="-2">
+    Move with the Moment.
+  </text>
+  <text x="120" y="420" fill="#ffffff" font-family="" font-size="24" opacity="0.8">
+    都会と自然の交差点で、心が動く一瞬を。
+  </text>
+</svg>

@@ -1,0 +1,96 @@
+{
+    "nav": {
+        "home": "Home",
+        "works": "Works",
+        "services": "Services",
+        "about": "About",
+        "journal": "Journal",
+        "contact": "Contact"
+    },
+    "footer": {
+        "privacyPolicy": "Privacy Policy",
+        "termsOfService": "Terms of Service"
+    },
+    "common": {
+        "readMore": "Read More",
+        "contactUs": "Contact Us",
+        "viewAll": "View All",
+        "loading": "Loading...",
+        "close": "Close",
+        "menu": "Menu"
+    },
+    "home": {
+        "title": "Taro Photos - Professional Photography in Tokyo",
+        "heroTitle": "Overview For Insights",
+        "featured": "Featured Works"
+    },
+    "works": {
+        "title": "Works",
+        "allWorks": "All Works",
+        "commercial": "Commercial",
+        "personal": "Personal",
+        "viewSeries": "View Series"
+    },
+    "about": {
+        "title": "About",
+        "mission": "Mission",
+        "vision": "Vision",
+        "values": "Values",
+        "timeline": "Timeline",
+        "expertise": "Expertise",
+        "approach": "Approach",
+        "clients": "Clients"
+    },
+    "services": {
+        "title": "Services",
+        "plans": "Service Plans",
+        "process": "Process",
+        "faq": "FAQ"
+    },
+    "journal": {
+        "title": "Journal",
+        "allPosts": "All Posts",
+        "category": "Category",
+        "behind": "Behind",
+        "news": "News",
+        "tips": "Tips"
+    },
+    "contact": {
+        "title": "Contact",
+        "description": "Get in touch for project inquiries, photography bookings, and more.",
+        "submit": "Submit",
+        "success": "Thank you for contacting us.",
+        "error": "Failed to send. Please try again."
+    },
+    "legal": {
+        "title": "Legal",
+        "privacy": "Privacy Policy",
+        "terms": "Terms of Service"
+    },
+    "metadata": {
+        "home": {
+            "title": "Taro Photos - Professional Photography in Tokyo",
+            "description": "Professional photography services in Tokyo. Specializing in portrait, event, and commercial photography."
+        },
+        "works": {
+            "title": "Works | Taro Photos",
+            "description": "Browse our photography portfolio featuring commercial and personal works."
+        },
+        "about": {
+            "title": "About | Taro Photos",
+            "description": "Learn more about Taro Photos, a professional photographer based in Tokyo."
+        },
+        "services": {
+            "title": "Services | Taro Photos",
+            "description": "Professional photography services including portrait, event, and commercial photography."
+        },
+        "journal": {
+            "title": "Journal | Taro Photos",
+            "description": "Behind the scenes, news, and photography tips from Taro Photos."
+        },
+        "contact": {
+            "title": "Contact | Taro Photos",
+            "description": "Get in touch for project inquiries and photography bookings."
+        }
+    }
+}

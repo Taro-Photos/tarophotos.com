@@ -1,0 +1,16 @@
+{
+  "@context": "https://schema.org",
+  "@type": [
+    "Person",
+    "Organization"
+  ],
+  "name": "白井 悠太郎 / Taro Photos",
+  "url": "https://tarophotos.com/",
+  "sameAs": [
+    "https://www.instagram.com/taro.photostagram",
+    "https://www.instagram.com/taro.monochrome",
+    "https://note.com/taro_whitey",
+    "https://www.youtube.com/@tarophotos"
+  ],
+  "image": "https://tarophotos.com/og/taro.jpg"
+}

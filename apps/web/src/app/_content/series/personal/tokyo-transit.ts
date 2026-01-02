@@ -1,0 +1,60 @@
+import type { SeriesDetails } from '../types';
+
+export const tokyoTransit: SeriesDetails = {
+  slug: "tokyo-transit",
+  published: true,
+  category: "Personal",
+  title: "Tokyo Transit",
+  year: 2024,
+  location: "Tokyo, Japan",
+  palette: "monochrome",
+  focus: "motion",
+  synopsis: "動き続ける都市。電車、通勤者、街の流れを捉えた都市交通のスナップシリーズ。",
+  lead: "東京の動脈である鉄道網と、そこを行き交う人々の姿を記録しました。朝の通勤ラッシュから深夜の静かな駅まで、都市の鼓動を感じられる瞬間を切り取っています。",
+  story: "山手線、地下鉄、私鉄など、東京の主要な路線を巡りながら撮影。モノクロームで統一することで、動きと光のコントラストを強調し、都市交通が持つダイナミズムと人間のリズムを表現しました。",
+  tags: ["Transit", "Motion", "Monochrome", "Urban Life"],
+  cover: {
+    src: "/series-gallery/morning-transit/morning-transit-01.webp",
+    alt: "朝の通勤電車と乗客の影",
+    width: 2560,
+    height: 1707,
+  },
+  heroImage: {
+    src: "/series-gallery/morning-transit/morning-transit-01.webp",
+    alt: "Tokyo Transit - 都市の動脈",
+    width: 2560,
+    height: 1707,
+  },
+  gallery: [
+    {
+      src: "/series-gallery/morning-transit/morning-transit-01.webp",
+      alt: "朝の通勤電車と乗客の影",
+      width: 2560,
+      height: 1707,
+      contentLocation: "Tokyo Metro, Japan",
+      datePublished: "2024-04-15",
+      caption: "朝の通勤電車が都市を目覚めさせる。",
+    },
+    {
+      src: "/series-gallery/matsuyama-transit/matsuyama-transit-01.webp",
+      alt: "路面電車が走る街並み",
+      width: 1707,
+      height: 2560,
+      contentLocation: "Matsuyama, Japan",
+      datePublished: "2024-07-08",
+      caption: "路面電車が時代を繋ぐ。",
+    },
+  ],
+  exif: [
+    { label: "Camera", value: "Sony α7 III (ILCE-7M3)" },
+    { label: "Lens", value: "FE 35mm F1.4 / FE 50mm F1.4" },
+    { label: "Settings", value: "1/125s - 1/500s · F1.4 - F4 · ISO 800-3200" },
+    { label: "Processing", value: "Black & White Conversion" },
+  ],
+  relatedCta: {
+    heading: "ドキュメンタリー撮影のご依頼",
+    body: "交通機関のプロモーションやドキュメンタリー制作を承ります。",
+    href: "/contact",
+    label: "Contact Me",
+  },
+};

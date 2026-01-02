@@ -1,0 +1,112 @@
+[
+  {
+    "key": "name",
+    "label": "お名前",
+    "type": "text",
+    "required": true
+  },
+  {
+    "key": "email",
+    "label": "メールアドレス",
+    "type": "email",
+    "required": true
+  },
+  {
+    "key": "purpose",
+    "label": "依頼種別",
+    "type": "select",
+    "required": true,
+    "options": [
+      "スポーツ/イベント",
+      "旅行同行",
+      "ドキュメント",
+      "動画制作",
+      "その他"
+    ]
+  },
+  {
+    "key": "usage",
+    "label": "使用媒体",
+    "type": "checkbox",
+    "required": false,
+    "options": [
+      "Web",
+      "SNS",
+      "印刷",
+      "社内のみ"
+    ]
+  },
+  {
+    "key": "role",
+    "label": "発注形態",
+    "type": "radio",
+    "required": true,
+    "options": [
+      "本人",
+      "代理（広告/制作会社等）"
+    ]
+  },
+  {
+    "key": "date_primary",
+    "label": "希望日程（第1希望）",
+    "type": "date",
+    "required": true
+  },
+  {
+    "key": "date_backup",
+    "label": "希望日程（第2希望）",
+    "type": "date",
+    "required": false
+  },
+  {
+    "key": "location",
+    "label": "撮影地",
+    "type": "text",
+    "required": true
+  },
+  {
+    "key": "shots",
+    "label": "想定カット数",
+    "type": "number",
+    "required": false
+  },
+  {
+    "key": "deadline",
+    "label": "納期",
+    "type": "text",
+    "required": false
+  },
+  {
+    "key": "budget",
+    "label": "予算レンジ",
+    "type": "select",
+    "required": false,
+    "options": [
+      "~¥50,000",
+      "¥50,000–¥100,000",
+      "¥100,000–¥200,000",
+      "¥200,000~"
+    ]
+  },
+  {
+    "key": "reference",
+    "label": "参考作品URL",
+    "type": "url",
+    "required": false
+  },
+  {
+    "key": "note",
+    "label": "備考",
+    "type": "textarea",
+    "required": false
+  },
+  {
+    "key": "agree",
+    "label": "プライバシーポリシーへの同意",
+    "type": "checkbox",
+    "required": true,
+    "options": [
+      "同意する"
+    ]
+  }
+]

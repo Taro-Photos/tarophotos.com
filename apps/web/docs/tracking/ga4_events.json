@@ -1,0 +1,61 @@
+[
+  {
+    "name": "view_series",
+    "params": [
+      "series_slug"
+    ]
+  },
+  {
+    "name": "cta_click",
+    "params": [
+      "location",
+      "label"
+    ]
+  },
+  {
+    "name": "contact_open",
+    "params": [
+      "source"
+    ]
+  },
+  {
+    "name": "contact_submit",
+    "params": [
+      "service",
+      "budget"
+    ]
+  },
+  {
+    "name": "lightbox_open",
+    "params": [
+      "series_slug",
+      "index"
+    ]
+  },
+  {
+    "name": "scroll_75",
+    "params": [
+      "path"
+    ]
+  },
+  {
+    "name": "filter_change",
+    "params": [
+      "facet",
+      "value"
+    ]
+  },
+  {
+    "name": "paginate",
+    "params": [
+      "page"
+    ]
+  },
+  {
+    "name": "delivery_open",
+    "params": [
+      "client",
+      "gallery"
+    ]
+  }
+]

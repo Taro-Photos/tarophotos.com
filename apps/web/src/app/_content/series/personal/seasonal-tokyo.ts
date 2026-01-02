@@ -1,0 +1,68 @@
+import type { SeriesDetails } from '../types';
+
+export const seasonalTokyo: SeriesDetails = {
+  slug: "seasonal-tokyo",
+  published: true,
+  category: "Personal",
+  title: "Seasonal Tokyo",
+  year: 2024,
+  location: "Tokyo, Japan",
+  palette: "color",
+  focus: "nature",
+  synopsis: "四季が織りなす東京の表情。桜、新緑、紅葉、雪景色を通じて都市の移ろいを記録。",
+  lead: "東京の四季を追いかけ、季節ごとに変化する都市の表情を捉えました。桜の季節から冬の静けさまで、自然と都市が調和する瞬間を切り取っています。",
+  story: "上野公園、代々木公園、皇居外苑など、東京を代表する自然豊かなロケーションで撮影。季節の移ろいを感じられるタイミングを逃さないよう、開花情報や紅葉の見頃をチェックしながら、年間を通じて撮影を続けました。",
+  tags: ["Seasonal", "Nature", "Sakura", "Urban Nature"],
+  cover: {
+    src: "/series-gallery/sakura-resonance/sakura-resonance-01.webp",
+    alt: "満開の桜と都市の風景",
+    width: 2560,
+    height: 1707,
+  },
+  heroImage: {
+    src: "/series-gallery/sakura-resonance/sakura-resonance-01.webp",
+    alt: "Seasonal Tokyo - 東京の四季",
+    width: 2560,
+    height: 1707,
+  },
+  gallery: [
+    {
+      src: "/series-gallery/sakura-resonance/sakura-resonance-01.webp",
+      alt: "満開の桜と都市の風景",
+      width: 2560,
+      height: 1707,
+      contentLocation: "Ueno Park, Tokyo, Japan",
+      datePublished: "2024-03-28",
+      caption: "桜の共鳴が都市に春を告げる。",
+    },
+    {
+      src: "/series-gallery/spring-sanctuaries/spring-sanctuaries-01.webp",
+      alt: "春の神社境内",
+      width: 1707,
+      height: 2560,
+      contentLocation: "Tokyo, Japan",
+      datePublished: "2024-04-10",
+      caption: "新緑が神社を包み込む春の一日。",
+    },
+    {
+      src: "/series-gallery/winter-gleam/winter-gleam-01.webp",
+      alt: "冬の街に輝くイルミネーション",
+      width: 2560,
+      height: 1707,
+      contentLocation: "Marunouchi, Tokyo, Japan",
+      datePublished: "2024-12-20",
+      caption: "冬の冷たい空気にイルミネーションが輝く。",
+    },
+  ],
+  exif: [
+    { label: "Camera", value: "Sony α7 III (ILCE-7M3)" },
+    { label: "Lens", value: "FE 24-70mm F2.8 GM / FE 85mm F1.4" },
+    { label: "Settings", value: "1/250s - 1/1000s · F2.8 - F5.6 · ISO 200-800" },
+  ],
+  relatedCta: {
+    heading: "四季の撮影プラン",
+    body: "観光プロモーションや季節のキャンペーン向けに、四季折々の東京を撮影します。",
+    href: "/services",
+    label: "Servicesを見る",
+  },
+};

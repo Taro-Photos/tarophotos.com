@@ -60,13 +60,28 @@ export class AmplifyStack extends cdk.Stack
         super(scope, id, props);
 
         // Get configuration from context or use defaults
-        const repoOwner =
+        // Resolve repository info
+        const rawRepoName =
+            props?.repositoryName ||
+            this.node.tryGetContext('repositoryName') ||
+            process.env.REPO_NAME ||
+            'tarophotos.com';
+
+        let repoOwner =
             props?.repositoryOwner ||
             this.node.tryGetContext('repositoryOwner') ||
             process.env.REPO_OWNER ||
             'Taro-Photos';
-        const repoName =
-            props?.repositoryName || this.node.tryGetContext('repositoryName') || process.env.REPO_NAME;
+
+        let repoName = rawRepoName;
+
+        // If repoName is in "owner/name" format, split it
+        if (rawRepoName.includes('/'))
+        {
+            const parts = rawRepoName.split('/');
+            repoOwner = parts[0];
+            repoName = parts[1];
+        }
 
         const appName = props?.amplifyAppName || process.env.AMPLIFY_APP_NAME;
 

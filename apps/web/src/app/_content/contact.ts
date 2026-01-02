@@ -13,3 +13,4 @@ export type ContactField = FormField;
 export const contactFields = contactFormFields as ContactField[];
 
 export const primaryContactEmail = process.env.NEXT_PUBLIC_PRIMARY_CONTACT_EMAIL || "";
+export const primaryContactMailto = `mailto:${primaryContactEmail}`;

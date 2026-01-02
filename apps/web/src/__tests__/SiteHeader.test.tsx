@@ -7,7 +7,7 @@ import { SiteHeader } from "@/components/organisms/SiteHeader";
 import { pushAnalyticsEvent } from "@/app/_lib/analytics";
 
 vi.mock("next/navigation", () => ({
-  usePathname: () => "/booking",
+  usePathname: () => "/en/contact",
 }));
 
 vi.mock("next/link", () => ({
@@ -48,13 +48,13 @@ describe("SiteHeader", () => {
     expect(document.body.style.overflow).toBe("hidden");
 
     const mobileNav = screen.getByRole("dialog", { name: "Mobile navigation" });
-    const worksLink = within(mobileNav).getByRole("link", { name: "Works" });
+    const worksLink = within(mobileNav).getByRole("link", { name: "works" });
 
     await user.click(worksLink);
 
     expect(pushAnalyticsEvent).toHaveBeenCalledWith({
       name: "cta_click",
-      params: { location: "site_header", label: "Works" },
+      params: { location: "site_header", label: "works" },
     });
 
     expect(toggleButton).toHaveAttribute("aria-expanded", "false");
@@ -65,7 +65,7 @@ describe("SiteHeader", () => {
   it("highlights the active desktop link based on the current path", () => {
     render(<SiteHeader />);
 
-    const bookingLink = screen.getAllByRole("link", { name: "Booking" })[0];
-    expect(bookingLink.className).toContain("bg-gradient-accent");
+    const contactLink = screen.getAllByRole("link", { name: "contact" })[0];
+    expect(contactLink.className).toContain("bg-gradient-accent");
   });
 });

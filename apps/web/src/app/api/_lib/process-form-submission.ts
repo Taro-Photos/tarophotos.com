@@ -85,9 +85,10 @@ function getSesClient(): SESClient
   return sesClient;
 }
 
-function escapeHtml(value: string)
+function escapeHtml(value: unknown)
 {
-  return value
+  const str = String(value ?? "");
+  return str
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")

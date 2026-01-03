@@ -5,8 +5,8 @@ import { processFormSubmission } from "@/app/api/_lib/process-form-submission";
 
 const CONTACT_NOTIFICATION_EMAIL = process.env.SES_TO_EMAIL || process.env.CONTACT_NOTIFICATION_EMAIL;
 
-const escapeHtml = (value: string) =>
-  value
+const escapeHtml = (value: unknown) =>
+  String(value ?? "")
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")

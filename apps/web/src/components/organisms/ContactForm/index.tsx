@@ -150,9 +150,23 @@ export default function ContactForm() {
                  className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
                  disabled={status === "submitting"}
                />
-               <label htmlFor={field.key} className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                 {field.options?.[0]}
-               </label>
+                <label htmlFor={field.key} className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  {field.key === "agree" ? (
+                    <>
+                      I agree to the{" "}
+                      <a
+                        href="/legal#privacy"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="underline hover:text-primary transition-colors"
+                      >
+                        Privacy Policy
+                      </a>
+                    </>
+                  ) : (
+                    field.options?.[0]
+                  )}
+                </label>
              </div>
           ) : (
             <input

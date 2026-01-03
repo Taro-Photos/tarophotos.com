@@ -107,11 +107,11 @@ describe("POST /api/contact", () =>
       createRequest(
         {
           fields: {
-            category: "制作パートナーについて",
-            name: "山田 太郎",
+            category: "General Inquiry",
+            name: "Test User",
             email: "guest@example.com",
-            message: "取材させてください",
-            agree: "同意する",
+            message: "This is a test message",
+            agree: "I agree to the Privacy Policy",
           },
         },
         { referer: "https://taro.photos/contact", "user-agent": "Vitest" },
@@ -130,15 +130,15 @@ describe("POST /api/contact", () =>
     const notificationCommand = sendMock.mock.calls[0][0];
     expect(notificationCommand.Source).toBe("noreply@example.com");
     expect(notificationCommand.Destination.ToAddresses).toContain("inbox@example.com");
-    expect(notificationCommand.Message.Subject.Data).toContain("制作パートナーについて");
-    expect(notificationCommand.Message.Body.Html.Data).toContain("制作パートナーについて");
+    expect(notificationCommand.Message.Subject.Data).toContain("General Inquiry");
+    expect(notificationCommand.Message.Body.Html.Data).toContain("General Inquiry");
     expect(notificationCommand.ReplyToAddresses).toContain("guest@example.com");
 
     // Verify second email (auto-response)
     const autoResponseCommand = sendMock.mock.calls[1][0];
     expect(autoResponseCommand.Source).toBe("noreply@example.com");
     expect(autoResponseCommand.Destination.ToAddresses).toContain("guest@example.com");
-    expect(autoResponseCommand.Message.Subject.Data).toContain("お問い合わせありがとうございます");
+    expect(autoResponseCommand.Message.Subject.Data).toContain("Thank you for your inquiry");
   });
 
   it("returns 500 when SES send fails with specific error info", async () =>

@@ -13,15 +13,17 @@ const escapeHtml = (value: string) =>
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#39;");
 
-export async function POST(request: NextRequest) {
+export async function POST(request: NextRequest)
+{
   return processFormSubmission(request, {
     formKey: "contact",
-    displayName: "Contact フォーム",
+    displayName: "Contact Form",
     notificationEmail: CONTACT_NOTIFICATION_EMAIL,
     successMessage: "Contact request received.",
     missingNotificationMessage: "Contact notification email is not configured.",
     fieldDefinitions: contactFields,
-    subject: (payload) => {
+    subject: (payload) =>
+    {
       const category = payload.fields.category;
       const readableCategory = Array.isArray(category) ? category.join(", ") : category;
       const suffix = readableCategory ? `: ${readableCategory}` : "";
@@ -31,27 +33,29 @@ export async function POST(request: NextRequest) {
     autoResponse: {
       emailField: "email",
       nameField: "name",
-      subject: () => "【Taro Photos】お問い合わせありがとうございます",
-      html: (_, context) => {
-        const greeting = context.recipientName ? `${escapeHtml(context.recipientName)} 様` : "";
+      subject: () => "[Taro Photos] Thank you for your inquiry",
+      html: (_, context) =>
+      {
+        const greeting = context.recipientName ? `${escapeHtml(context.recipientName)}` : "Hello";
         return `<!DOCTYPE html><html><body style="font-family:system-ui,-apple-system,'Segoe UI',sans-serif;line-height:1.7;color:#0f172a;background:#f8fafc;padding:24px;">
-          ${greeting ? `<p>${greeting}</p>` : ""}
-          <p>お問い合わせありがとうございます。</p>
-          <p>以下の内容で受け付けました。担当者が詳細を確認のうえ、<strong>2日以内</strong>にご返信いたします。追加で共有したい事項があれば、本メールに返信してお知らせください。</p>
+          ${greeting ? `<p>${greeting},</p>` : ""}
+          <p>Thank you for contacting us.</p>
+          <p>We have received your inquiry. We will get back to you within 2 business days. If you have any additional information to share, please reply to this email.</p>
           ${context.summaryHtml}
-          <p style="margin-top:24px;font-size:12px;color:#64748b;">本メールは自動送信です。心当たりがない場合はこのまま破棄してください。</p>
+          <p style="margin-top:24px;font-size:12px;color:#64748b;">This is an automated message. If you did not make this request, please ignore this email.</p>
         </body></html>`;
       },
-      text: (_, context) => {
-        const greeting = context.recipientName ? `${context.recipientName} 様\n\n` : "";
-        return `${greeting}お問い合わせありがとうございます。
+      text: (_, context) =>
+      {
+        const greeting = context.recipientName ? `${context.recipientName},\n\n` : "Hello,\n\n";
+        return `${greeting}Thank you for contacting us.
 
-以下の内容で受け付けました。担当者が詳細を確認のうえ、2日以内にご返信いたします。追加で共有したい事項があれば、本メールに返信してお知らせください。
+We have received your inquiry. We will get back to you within 2 business days. If you have any additional information to share, please reply to this email.
 
 ${context.summaryText}
 
-――
-本メールは自動送信です。心当たりがない場合はこのまま破棄してください。`;
+--
+This is an automated message. If you did not make this request, please ignore this email.`;
       },
     },
   });

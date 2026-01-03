@@ -71,7 +71,7 @@ function getSesClient(): SESClient
 
   if (!sesClient)
   {
-    const config: any = { region };
+    const config: { region: string; credentials?: { accessKeyId: string; secretAccessKey: string } } = { region };
     if (credentials.accessKeyId && credentials.secretAccessKey)
     {
       config.credentials = {
@@ -314,12 +314,13 @@ export async function processFormSubmission(
       return Response.json({ message: options.missingNotificationMessage }, { status: 500 });
     }
 
-    let body: any;
+    let body: Record<string, any>;
     try
     {
       body = await request.json();
     } catch (error)
     {
+      void error; // Acknowledge the error for linting if we're not using it
       return Response.json({ message: "Invalid JSON body" }, { status: 400 });
     }
 

@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 
-export async function GET(request: NextRequest)
+export async function GET(_request: NextRequest)
 {
     const envVars = {
         SES_REGION: process.env.SES_REGION,

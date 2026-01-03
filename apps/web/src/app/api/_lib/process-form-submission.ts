@@ -56,6 +56,10 @@ function getSesConfig()
   return {
     region: process.env.SES_REGION || "ap-northeast-1",
     fromEmail: process.env.SES_FROM_EMAIL || process.env.CONTACT_FROM_EMAIL,
+    credentials: {
+      accessKeyId: process.env.SES_AWS_ACCESS_KEY_ID,
+      secretAccessKey: process.env.SES_AWS_SECRET_ACCESS_KEY,
+    }
   };
 }
 
@@ -63,11 +67,19 @@ let sesClient: SESClient | null = null;
 
 function getSesClient(): SESClient
 {
-  const { region } = getSesConfig();
+  const { region, credentials } = getSesConfig();
 
   if (!sesClient)
   {
-    sesClient = new SESClient({ region });
+    const config: any = { region };
+    if (credentials.accessKeyId && credentials.secretAccessKey)
+    {
+      config.credentials = {
+        accessKeyId: credentials.accessKeyId,
+        secretAccessKey: credentials.secretAccessKey,
+      };
+    }
+    sesClient = new SESClient(config);
   }
 
   return sesClient;

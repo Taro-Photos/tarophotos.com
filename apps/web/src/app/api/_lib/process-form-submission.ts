@@ -305,7 +305,13 @@ export async function processFormSubmission(
   if (!options.notificationEmail)
   {
     console.error(`${options.formKey} notification email is not configured`);
-    return Response.json({ message: options.missingNotificationMessage }, { status: 500 });
+    return Response.json({
+      message: options.missingNotificationMessage,
+      debug: {
+        receivedNotificationEmail: options.notificationEmail,
+        envSesTo: process.env.SES_TO_EMAIL
+      }
+    }, { status: 500 });
   }
 
   let body: unknown;

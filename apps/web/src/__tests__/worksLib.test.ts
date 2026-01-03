@@ -4,19 +4,22 @@ import type { WorkSeries } from "@/app/_content/works";
 import { buildQuery, filterSeries, normalizeParam, paginateSeries } from "@/app/_lib/works";
 
 const sampleSeries: WorkSeries[] = [
-  { slug: "a", title: "Alpha", year: 2025, location: "Tokyo", palette: "color", focus: "urban", synopsis: "", cover: { src: "/a.jpg", alt: "a", width: 1, height: 1 } },
-  { slug: "b", title: "Beta", year: 2024, location: "Osaka", palette: "monochrome", focus: "nature", synopsis: "", cover: { src: "/b.jpg", alt: "b", width: 1, height: 1 } },
-  { slug: "c", title: "Gamma", year: 2024, location: "Kyoto", palette: "color", focus: "people", synopsis: "", cover: { src: "/c.jpg", alt: "c", width: 1, height: 1 } },
+  { slug: "a", title: "Alpha", year: 2025, location: "Tokyo", category: "Personal", palette: "color", focus: "urban", synopsis: "", cover: { src: "/a.jpg", alt: "a", width: 1, height: 1 } },
+  { slug: "b", title: "Beta", year: 2024, location: "Osaka", category: "Commercial", palette: "monochrome", focus: "nature", synopsis: "", cover: { src: "/b.jpg", alt: "b", width: 1, height: 1 } },
+  { slug: "c", title: "Gamma", year: 2024, location: "Kyoto", category: "Personal", palette: "color", focus: "people", synopsis: "", cover: { src: "/c.jpg", alt: "c", width: 1, height: 1 } },
 ];
 
-describe("works helpers", () => {
-  it("normalizes primitive and array values", () => {
+describe("works helpers", () =>
+{
+  it("normalizes primitive and array values", () =>
+  {
     expect(normalizeParam(undefined)).toBe("");
     expect(normalizeParam("2025")).toBe("2025");
     expect(normalizeParam(["2024", "2023"])).toBe("2024");
   });
 
-  it("builds canonical query strings and omits default page", () => {
+  it("builds canonical query strings and omits default page", () =>
+  {
     const params = { year: "2025", page: "1", palette: "color" };
     expect(buildQuery(params, {})).toBe("?year=2025&palette=color");
 
@@ -29,7 +32,8 @@ describe("works helpers", () => {
     expect(buildQuery(params, { palette: "" })).toBe("?year=2025");
   });
 
-  it("filters and sorts series by year then title", () => {
+  it("filters and sorts series by year then title", () =>
+  {
     const filtered = filterSeries(sampleSeries, { palette: "color" });
     expect(filtered.map((item) => item.slug)).toEqual(["a", "c"]);
 
@@ -38,7 +42,8 @@ describe("works helpers", () => {
     expect(focusFiltered[0]?.slug).toBe("b");
   });
 
-  it("paginates results with clamped bounds", () => {
+  it("paginates results with clamped bounds", () =>
+  {
     const pageSize = 2;
     const { items: firstPage, totalPages, currentPage } = paginateSeries(sampleSeries, pageSize, "1");
     expect(totalPages).toBe(2);

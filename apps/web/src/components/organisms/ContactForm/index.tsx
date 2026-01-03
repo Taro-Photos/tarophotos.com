@@ -42,8 +42,8 @@ export default function ContactForm() {
     setStatus("submitting");
     setErrorMessage("");
 
-    const data: Record<string, any> = {};
-    const fields: Record<string, any> = {};
+    const data: Record<string, unknown> = {};
+    const fields: Record<string, unknown> = {};
 
     contactFields.forEach((field) => {
        const value = formData.get(field.key);

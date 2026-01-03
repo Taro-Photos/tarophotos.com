@@ -40,7 +40,7 @@ describe("SeriesTeaserList", () => {
           {
             slug: "night-trails",
             title: "Night Trails",
-            year: 2025,
+            year: "2025",
             location: "Tokyo",
             summary: "City lights",
             cover: { src: "/night.jpg", alt: "Night", width: 1200, height: 900 },

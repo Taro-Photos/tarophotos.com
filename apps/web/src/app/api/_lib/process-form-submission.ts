@@ -290,28 +290,13 @@ export async function processFormSubmission(
   if (!fromEmail)
   {
     console.error("SES is not fully configured (missing SES_FROM_EMAIL)");
-    return Response.json({
-      message: "Email delivery is not configured.",
-      debug: {
-        region: process.env.SES_REGION,
-        hasFromEmail: !!process.env.SES_FROM_EMAIL,
-        fromEmailLen: process.env.SES_FROM_EMAIL?.length,
-        hasToEmail: !!process.env.SES_TO_EMAIL,
-        envKeys: Object.keys(process.env).filter(k => k.startsWith("SES") || k.startsWith("AWS"))
-      }
-    }, { status: 500 });
+    return Response.json({ message: "Email delivery is not configured." }, { status: 500 });
   }
 
   if (!options.notificationEmail)
   {
     console.error(`${options.formKey} notification email is not configured`);
-    return Response.json({
-      message: options.missingNotificationMessage,
-      debug: {
-        receivedNotificationEmail: options.notificationEmail,
-        envSesTo: process.env.SES_TO_EMAIL
-      }
-    }, { status: 500 });
+    return Response.json({ message: options.missingNotificationMessage }, { status: 500 });
   }
 
   let body: unknown;

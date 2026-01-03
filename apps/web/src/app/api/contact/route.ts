@@ -3,7 +3,7 @@ import { NextRequest } from "next/server";
 import { contactFields } from "@/app/_content/contact";
 import { processFormSubmission } from "@/app/api/_lib/process-form-submission";
 
-const CONTACT_NOTIFICATION_EMAIL = process.env.CONTACT_NOTIFICATION_EMAIL;
+const CONTACT_NOTIFICATION_EMAIL = process.env.SES_TO_EMAIL || process.env.CONTACT_NOTIFICATION_EMAIL;
 
 const escapeHtml = (value: string) =>
   value

@@ -174,8 +174,8 @@ describe("POST /api/contact", () =>
     it("handles MessageRejected error", async () =>
     {
       const errorSpy = vi.spyOn(console, "error").mockImplementation(() => { });
-      const error = new Error("Message rejected");
-      (error as any).name = "MessageRejected";
+      const error = new Error("Message rejected") as Error & { name: string };
+      error.name = "MessageRejected";
       sendMock.mockRejectedValueOnce(error);
 
       const { POST } = await import("@/app/api/contact/route");
@@ -192,8 +192,8 @@ describe("POST /api/contact", () =>
     it("handles AccountSendingPausedException", async () =>
     {
       const errorSpy = vi.spyOn(console, "error").mockImplementation(() => { });
-      const error = new Error("Sending paused");
-      (error as any).name = "AccountSendingPausedException";
+      const error = new Error("Sending paused") as Error & { name: string };
+      error.name = "AccountSendingPausedException";
       sendMock.mockRejectedValueOnce(error);
 
       const { POST } = await import("@/app/api/contact/route");
@@ -210,8 +210,8 @@ describe("POST /api/contact", () =>
     it("handles AccessDeniedException", async () =>
     {
       const errorSpy = vi.spyOn(console, "error").mockImplementation(() => { });
-      const error = new Error("Access denied");
-      (error as any).name = "AccessDeniedException";
+      const error = new Error("Access denied") as Error & { name: string };
+      error.name = "AccessDeniedException";
       sendMock.mockRejectedValueOnce(error);
 
       const { POST } = await import("@/app/api/contact/route");

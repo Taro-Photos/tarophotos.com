@@ -10,6 +10,7 @@ const series = [
     slug: "night-trails",
     title: "Night Trails",
     location: "Tokyo",
+    description: "City at night",
     images: [
       { src: "/night-1.jpg", alt: "Frame 1", width: 1200, height: 800 },
       { src: "/night-2.jpg", alt: "Frame 2", width: 1200, height: 800 },
@@ -19,6 +20,7 @@ const series = [
     slug: "brisk-dawn",
     title: "Brisk Dawn",
     location: "Osaka",
+    description: "Morning light",
     images: [
       { src: "/dawn-1.jpg", alt: "Dawn Frame", width: 1200, height: 800 },
     ],
@@ -33,12 +35,20 @@ function mockMatchMedia(matches: boolean) {
     onchange: null,
     addListener: (listener: (event: MediaQueryListEvent) => void) => listeners.add(listener),
     removeListener: (listener: (event: MediaQueryListEvent) => void) => listeners.delete(listener),
-    addEventListener: (_event: "change", listener: (event: MediaQueryListEvent) => void) => listeners.add(listener),
-    removeEventListener: (_event: "change", listener: (event: MediaQueryListEvent) => void) => listeners.delete(listener),
+    addEventListener: (type: string, listener: EventListenerOrEventListenerObject | null) => {
+      if (type === "change" && typeof listener === "function") {
+        listeners.add(listener as (event: MediaQueryListEvent) => void);
+      }
+    },
+    removeEventListener: (type: string, listener: EventListenerOrEventListenerObject | null) => {
+      if (type === "change" && typeof listener === "function") {
+        listeners.delete(listener as (event: MediaQueryListEvent) => void);
+      }
+    },
     dispatchEvent: (event: MediaQueryListEvent) => {
       listeners.forEach((listener) => listener(event));
       return true;
-  },
+    },
 } satisfies MediaQueryList;
 
   Object.defineProperty(window, "matchMedia", {

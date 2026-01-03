@@ -36,6 +36,7 @@ describe("WorkCard", () => {
     title: "Night Trails",
     year: 2025,
     location: "Tokyo",
+    category: "Personal",
     palette: "color",
     focus: "urban",
     synopsis: "City lights",

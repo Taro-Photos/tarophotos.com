@@ -136,7 +136,7 @@ export class AmplifyStack extends cdk.Stack
                 },
                 {
                     name: 'SES_REGION',
-                    value: process.env.SES_REGION || 'us-west-2',
+                    value: process.env.SES_REGION || 'ap-northeast-1',
                 },
                 {
                     name: 'SES_FROM_EMAIL',
@@ -144,7 +144,7 @@ export class AmplifyStack extends cdk.Stack
                 },
                 {
                     name: 'SES_TO_EMAIL',
-                    value: process.env.SES_TO_EMAIL || 'yutaroshirai@gmail.com',
+                    value: process.env.SES_TO_EMAIL || 'contact@tarophotos.com',
                 },
                 // AWS Credentials should ideally be managed via IAM roles or Secrets Manager
                 // Passing them as env vars here purely for the runtime to pick them up if role-based access is not used.

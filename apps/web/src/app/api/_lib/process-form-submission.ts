@@ -463,8 +463,13 @@ export async function processFormSubmission(
     }
 
     return Response.json({
-      message: "Failed to send email.",
-      error: error instanceof Error ? error.message : "Unknown error"
-    }, { status: 500 });
+      message: "Debug: Failed to send email.",
+      error: error instanceof Error ? error.message : "Unknown error",
+      debug: {
+        hasAccessKey: !!process.env.SES_AWS_ACCESS_KEY_ID,
+        hasSecretKey: !!process.env.SES_AWS_SECRET_ACCESS_KEY,
+        region: process.env.SES_REGION
+      }
+    }, { status: 200 });
   }
 }

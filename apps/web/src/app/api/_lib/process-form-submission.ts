@@ -297,88 +297,76 @@ export async function processFormSubmission(
   options: FormSubmissionOptions,
 )
 {
-  const { fromEmail } = getSesConfig();
-
-  if (!fromEmail)
-  {
-    console.error("SES is not fully configured (missing SES_FROM_EMAIL)");
-    return Response.json({ message: "Email delivery is not configured." }, { status: 500 });
-  }
-
-  if (!options.notificationEmail)
-  {
-    console.error(`${options.formKey} notification email is not configured`);
-    return Response.json({ message: options.missingNotificationMessage }, { status: 500 });
-  }
-
-  let body: unknown;
-
   try
   {
-    body = await request.json();
-  } catch (error)
-  {
-    console.error(`${options.formKey} payload parse error`, error);
-    return Response.json({ message: "Invalid payload." }, { status: 400 });
-  }
+    const { fromEmail } = getSesConfig();
 
-  if (!body || typeof body !== "object" || !("fields" in body))
-  {
-    return Response.json({ message: "Invalid payload." }, { status: 400 });
-  }
-
-  const fieldsCandidate = (body as { fields?: unknown }).fields;
-
-  if (!fieldsCandidate || typeof fieldsCandidate !== "object" || Array.isArray(fieldsCandidate))
-  {
-    return Response.json({ message: "Invalid payload." }, { status: 400 });
-  }
-
-  // Validate fields based on definitions
-  if (options.fieldDefinitions)
-  {
-    for (const field of options.fieldDefinitions)
+    if (!fromEmail)
     {
-      const value = (fieldsCandidate as FieldMap)[field.key];
+      console.error("SES is not fully configured (missing SES_FROM_EMAIL)");
+      return Response.json({ message: "Email delivery is not configured." }, { status: 500 });
+    }
 
-      // Check required fields
-      if (field.required)
-      {
-        if (value === undefined || value === null || value === "")
-        {
-          return Response.json({ message: `Missing required field: ${field.label}` }, { status: 400 });
-        }
-        if (Array.isArray(value) && value.length === 0)
-        {
-          return Response.json({ message: `Missing required field: ${field.label}` }, { status: 400 });
-        }
-      }
+    if (!options.notificationEmail)
+    {
+      console.error(`${options.formKey} notification email is not configured`);
+      return Response.json({ message: options.missingNotificationMessage }, { status: 500 });
+    }
 
-      // Check email format
-      if (field.type === "email" && value && typeof value === "string")
+    let body: any;
+    try
+    {
+      body = await request.json();
+    } catch (error)
+    {
+      return Response.json({ message: "Invalid JSON body" }, { status: 400 });
+    }
+
+    const fieldsCandidate = body.fields || {};
+
+    // Validate inputs
+    if (options.fieldDefinitions)
+    {
+      for (const field of options.fieldDefinitions)
       {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(value))
+        if (field.required)
         {
-          return Response.json({ message: `Invalid email format: ${field.label}` }, { status: 400 });
+          const value = fieldsCandidate[field.key];
+          const isEmpty =
+            value === undefined ||
+            value === null ||
+            (typeof value === "string" && value.trim() === "") ||
+            (Array.isArray(value) && value.length === 0);
+
+          if (isEmpty)
+          {
+            return Response.json({ message: `Missing required field: ${field.label}` }, { status: 400 });
+          }
+        }
+
+        const value = fieldsCandidate[field.key];
+        if (field.type === "email" && value && typeof value === "string")
+        {
+          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+          if (!emailRegex.test(value))
+          {
+            return Response.json({ message: `Invalid email format: ${field.label}` }, { status: 400 });
+          }
         }
       }
     }
-  }
 
-  const payload: FormSubmissionPayload = {
-    submittedAt: new Date().toISOString(),
-    fields: fieldsCandidate as FieldMap,
-    metadata: {
-      userAgent: request.headers.get("user-agent"),
-      referrer: request.headers.get("referer"),
-    },
-  };
+    const payload: FormSubmissionPayload = {
+      submittedAt: new Date().toISOString(),
+      fields: fieldsCandidate as FieldMap,
+      metadata: {
+        userAgent: request.headers.get("user-agent"),
+        referrer: request.headers.get("referer"),
+      },
+    };
 
-  const emailContent = buildEmailContent(payload, options);
+    const emailContent = buildEmailContent(payload, options);
 
-  try
-  {
     const output = await sendSesEmail({
       to: options.notificationEmail,
       from: fromEmail,

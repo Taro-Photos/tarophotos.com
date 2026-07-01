@@ -1,8 +1,6 @@
 import type { MetadataRoute } from "next";
 import { seriesDetails } from "./_content/series";
-import { journalPostDetails } from "./_content/journal";
 import { legalPage } from "./_content/legal";
-import { timeline } from "./_content/about";
 import { getSiteUrl } from "./_lib/site";
 
 const toTimestamp = (value: string | number | Date | undefined) => {
@@ -18,22 +16,10 @@ const galleryTimestamps = seriesDetails
   .filter((timestamp): timestamp is number => typeof timestamp === "number");
 const latestGalleryTimestamp = galleryTimestamps.length ? Math.max(...galleryTimestamps) : undefined;
 
-const journalTimestamps = journalPostDetails
-  .map((post) => toTimestamp(post.date))
-  .filter((timestamp): timestamp is number => typeof timestamp === "number");
-const latestJournalTimestamp = journalTimestamps.length ? Math.max(...journalTimestamps) : undefined;
-
-const timelineTimestamps = timeline
-  .map((entry) => toTimestamp(`${entry.year}-01-01`))
-  .filter((timestamp): timestamp is number => typeof timestamp === "number");
-const latestTimelineTimestamp = timelineTimestamps.length ? Math.max(...timelineTimestamps) : undefined;
-
 const legalTimestamp = toTimestamp(`${legalPage.updatedAt}T00:00:00Z`);
 
 const defaultTimestamp = Math.max(
   latestGalleryTimestamp ?? 0,
-  latestJournalTimestamp ?? 0,
-  latestTimelineTimestamp ?? 0,
   legalTimestamp ?? 0,
 );
 
@@ -59,28 +45,9 @@ const STATIC_ROUTES: Array<{
     lastModified: defaultTimestamp,
   },
   {
-    path: "/about",
-    changeFrequency: "monthly",
-    lastModified: latestTimelineTimestamp ?? defaultTimestamp,
-  },
-  {
-    path: "/services",
-    changeFrequency: "monthly",
-    lastModified: latestGalleryTimestamp ?? defaultTimestamp,
-  },
-  {
-    path: "/contact",
-    changeFrequency: "weekly",
-  },
-  {
     path: "/works",
     changeFrequency: "weekly",
     lastModified: latestGalleryTimestamp ?? defaultTimestamp,
-  },
-  {
-    path: "/journal",
-    changeFrequency: "weekly",
-    lastModified: latestJournalTimestamp ?? defaultTimestamp,
   },
   {
     path: "/legal",
@@ -114,11 +81,5 @@ export default function sitemap(): MetadataRoute.Sitemap {
     };
   });
 
-  const journalRoutes: MetadataRoute.Sitemap = journalPostDetails.map((post) => ({
-    url: `${siteUrl}/journal/${post.slug}`,
-    lastModified: safeDate(post.date),
-    changeFrequency: "weekly",
-  }));
-
-  return [...staticRoutes, ...worksRoutes, ...journalRoutes];
+  return [...staticRoutes, ...worksRoutes];
 }

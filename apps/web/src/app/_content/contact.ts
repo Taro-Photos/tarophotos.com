@@ -1,16 +1,14 @@
-import contactFormFields from "../../../docs/forms/contact_form_fields.json";
+const DEFAULT_PRIMARY_CONTACT_EMAIL = "contact@taro.photos";
 
-export type FormField = {
-  key: string;
-  label: string;
-  type: "text" | "textarea" | "select" | "radio" | "checkbox" | "date" | "number" | "url" | "email";
-  required?: boolean;
-  options?: string[];
-};
+function normalizeEmail(value?: string | null) {
+  return value?.trim().replace(/^mailto:/i, "") ?? "";
+}
 
-export type ContactField = FormField;
+function resolvePrimaryContactEmail() {
+  const fromEnv = normalizeEmail(process.env.NEXT_PUBLIC_PRIMARY_CONTACT_EMAIL ?? null);
+  return fromEnv || DEFAULT_PRIMARY_CONTACT_EMAIL;
+}
 
-export const contactFields = contactFormFields as ContactField[];
+export const primaryContactEmail = resolvePrimaryContactEmail();
 
-export const primaryContactEmail = process.env.NEXT_PUBLIC_PRIMARY_CONTACT_EMAIL || "";
 export const primaryContactMailto = `mailto:${primaryContactEmail}`;

@@ -1,0 +1,105 @@
+.footer {
+  padding-top: clamp(64px, 9vw, 80px);
+  padding-bottom: clamp(48px, 6vw, 64px);
+}
+.rule {
+  border: 0;
+  border-top: 1px solid var(--color-hair);
+  max-width: var(--container-measure);
+  margin: 0 auto;
+}
+.inner {
+  padding-top: clamp(56px, 8vw, 80px);
+}
+.top {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 520px);
+  align-items: start;
+  gap: clamp(40px, 7vw, 96px);
+  padding-bottom: clamp(40px, 6vw, 64px);
+}
+.mark {
+  font-family: var(--font-serif);
+  font-weight: 300;
+  font-size: clamp(40px, 8vw, 64px);
+  line-height: 0.92;
+  letter-spacing: 0.01em;
+}
+.markJa {
+  display: block;
+  font-family: var(--font-mincho);
+  font-size: 15px;
+  letter-spacing: 0.4em;
+  color: var(--color-warm-grey);
+  margin-top: 18px;
+}
+.lede {
+  font-family: var(--font-serif);
+  font-size: 18px;
+  font-weight: 300;
+  line-height: 1.6;
+  color: var(--color-warm-grey);
+  max-width: 34ch;
+  margin-top: clamp(28px, 4vw, 40px);
+}
+.ledeJa {
+  display: block;
+  font-family: var(--font-mincho);
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  margin-top: 10px;
+}
+.contact {
+  text-align: left;
+}
+.label {
+  font-family: var(--font-ui);
+  font-size: 10px;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--color-warm-grey);
+  margin-bottom: 22px;
+}
+.social {
+  margin-top: 28px;
+  display: flex;
+  gap: 26px;
+  justify-content: flex-start;
+  font-family: var(--font-ui);
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--color-warm-grey);
+}
+.social a {
+  transition: color 0.4s ease;
+}
+.social a:hover {
+  color: var(--color-ink);
+}
+.base {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding-top: 30px;
+  font-family: var(--font-ui);
+  font-size: 10.5px;
+  letter-spacing: 0.16em;
+  color: var(--color-warm-grey);
+}
+
+@media (max-width: 860px) {
+  .top {
+    grid-template-columns: 1fr;
+    gap: clamp(36px, 8vw, 56px);
+  }
+}
+
+@media (max-width: 700px) {
+  .base {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+}

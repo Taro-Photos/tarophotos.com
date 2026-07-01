@@ -1,0 +1,152 @@
+.hero {
+  padding-top: 64px;
+  padding-bottom: clamp(72px, 12vw, 120px);
+}
+
+.head {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: end;
+  gap: 40px;
+  margin-bottom: clamp(40px, 6vw, 64px);
+}
+
+.title {
+  font-family: var(--font-serif);
+  font-weight: 300;
+  font-size: clamp(50px, 11vw, 118px);
+  line-height: 0.9;
+  letter-spacing: -0.01em;
+}
+.line2 {
+  display: block;
+  font-style: italic;
+  font-weight: 300;
+  color: var(--color-warm-grey);
+  padding-left: 0.04em;
+}
+
+.ja {
+  font-family: var(--font-mincho);
+  font-weight: 400;
+  font-size: 15px;
+  letter-spacing: 0.5em;
+  color: var(--color-ink);
+  text-align: right;
+  line-height: 2;
+  white-space: nowrap;
+}
+.ja small {
+  display: block;
+  font-family: var(--font-ui);
+  font-weight: 300;
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  color: var(--color-warm-grey);
+  margin-top: 14px;
+}
+
+/* image は full-bleed しない — 周囲に paper が呼吸する */
+.frame {
+  display: grid;
+  grid-template-columns: 1fr minmax(0, 820px);
+  gap: 64px;
+  align-items: end;
+}
+.aside {
+  padding-bottom: 8px;
+  max-width: 300px;
+}
+.aside p {
+  font-size: 21px;
+  line-height: 1.62;
+  color: var(--color-ink);
+  font-weight: 300;
+}
+.aside p em {
+  font-style: italic;
+}
+.aside p .jaInline {
+  font-family: var(--font-mincho);
+  font-size: 18px;
+}
+.meta {
+  margin-top: 40px;
+  padding-top: 22px;
+  border-top: 1px solid var(--color-hair);
+}
+.metaLabel {
+  font-family: var(--font-ui);
+  font-size: 10px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--color-warm-grey);
+  display: block;
+  margin-bottom: 8px;
+}
+.metaVal {
+  font-family: var(--font-serif);
+  font-size: 17px;
+  font-weight: 400;
+  letter-spacing: 0.01em;
+}
+.metaVal .jaInline {
+  font-family: var(--font-mincho);
+  color: var(--color-warm-grey);
+  font-size: 14px;
+}
+
+.figure {
+  position: relative;
+  aspect-ratio: 3 / 2;
+  overflow: hidden;
+  background: var(--color-hair);
+}
+.figure :global(img) {
+  object-fit: cover;
+}
+.figcaption {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  padding: 14px 18px;
+  background: var(--color-paper);
+}
+.cap {
+  font-family: var(--font-ui);
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0.12em;
+  color: var(--color-ink);
+  font-variant-numeric: tabular-nums;
+}
+.capJa {
+  font-family: var(--font-mincho);
+  font-size: 12px;
+  color: var(--color-warm-grey);
+  margin-top: 2px;
+  letter-spacing: 0.16em;
+}
+
+@media (max-width: 900px) {
+  .head {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+  .ja {
+    text-align: left;
+    line-height: 1.8;
+  }
+  .frame {
+    grid-template-columns: 1fr;
+    gap: 32px;
+    align-items: start;
+  }
+  .aside {
+    max-width: none;
+    order: 2;
+  }
+  .figure {
+    order: 1;
+  }
+}

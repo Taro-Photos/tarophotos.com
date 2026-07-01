@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { SESClient, SendEmailCommand } from "@aws-sdk/client-ses";
 
-import type { FormField } from "@/app/_content/contact";
+import type { FormField } from "@/app/_content/booking";
 
 type FieldValue = string | string[];
 type FieldMap = Record<string, FieldValue>;

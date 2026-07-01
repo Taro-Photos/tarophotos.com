@@ -3,11 +3,6 @@ import React from "react";
 import type { ImageProps } from "next/image";
 import { vi } from "vitest";
 
-vi.mock("next-intl", () => ({
-  useTranslations: () => (key: string) => key,
-  useLocale: () => "en",
-}));
-
 vi.mock("next/image", () => ({
   __esModule: true,
   default: (props: ImageProps) =>

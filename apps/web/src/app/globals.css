@@ -1,63 +1,17 @@
 @import "tailwindcss";
 
+/* TARO Design System（非公開・内部管理 / 写真関連プロダクト横断で再利用）
+   tokens（SSOT）→ base/components の順で読み込む。
+   旧 teal/white DS は redesign で全面置換（synth-revised 確定 2026-06-27）。
+   詳細: src/design-system/README.md */
+@import "../design-system/tokens.css";
+@import "../design-system/base.css";
+
+/* Tailwind v4 は「使用検出」されない @theme の font 変数を :root に emit しない
+   （CSS Modules の var(--font-*) は走査対象外）。CSS Modules・base が依存する
+   3 書体を unlayered :root で確実に宣言する（layer 外＝最優先で必ず解決）。 */
 :root {
-  /* New Design Colors */
-  --color-primary: #333333;
-  --color-background-light: #FFFFFF;
-  --color-background-dark: #0A0A0A;
-  --color-text-light: #000000;
-  --color-text-dark: #FFFFFF;
-  --color-gray-500: #888888;
-  --color-gray-400: #9CA3AF; /* Tailwind gray-400 approximation */
-  
-  /* Legacy/Existing Variables (kept for compatibility if needed, but can be cleaned up) */
-  --color-bg-base: #ffffff;
-  --color-fg-base: #0d1c24;
-  --color-accent: #0a6e7a;
-}
-
-@theme inline {
-  --color-primary: var(--color-primary);
-  --color-background-light: var(--color-background-light);
-  --color-background-dark: var(--color-background-dark);
-  --color-text-light: var(--color-text-light);
-  --color-text-dark: var(--color-text-dark);
-  
-  --font-display: "Lato", sans-serif;
-  --font-sans: "Inter", sans-serif;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --color-bg-base: #06111a;
-    --color-fg-base: #e7f6ff;
-  }
-}
-
-body {
-  background-color: var(--color-background-light);
-  color: var(--color-text-light);
-  font-family: var(--font-display);
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-@media (prefers-color-scheme: dark) {
-  body {
-    background-color: var(--color-background-dark);
-    color: var(--color-text-dark);
-  }
-}
-
-/* Utility classes from design */
-.tracking-widest-custom {
-  letter-spacing: 0.2em;
-}
-
-.tracking-wider-custom {
-  letter-spacing: 0.1em;
-}
-
-.page-container {
-  @apply max-w-7xl mx-auto px-6 sm:px-10 md:px-20 w-full;
+  --font-serif: "Cormorant Garamond", Georgia, serif;
+  --font-mincho: "Shippori Mincho", serif;
+  --font-ui: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
 }

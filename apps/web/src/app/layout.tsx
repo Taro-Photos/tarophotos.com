@@ -1,55 +1,95 @@
 import type { Metadata } from "next";
-import { Inter, Lato } from "next/font/google"; // Import fonts
-import { getSiteUrl } from "./_lib/site";
 import "./globals.css";
+import { GOOGLE_FONTS_HREF } from "@/design-system";
+import { SiteHeader } from "@/components/site/SiteHeader";
+import { SiteFooter } from "@/components/site/SiteFooter";
+import { JsonLd } from "./_components/JsonLd";
+import { MotionProvider } from "./_components/MotionProvider";
+import { ScrollTracker } from "./_components/ScrollTracker";
+import { primaryContactEmail } from "./_content/contact";
+import { footerSocialLinks } from "./_content/site";
+import { getSiteUrl } from "./_lib/site";
 
-// Configure fonts
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-sans",
-  display: "swap",
-});
+const siteUrl = getSiteUrl();
+const socialProfileUrls = footerSocialLinks.map((link) => link.href);
 
-const lato = Lato({
-  weight: ["300", "400", "700"],
-  subsets: ["latin"],
-  variable: "--font-display",
-  display: "swap",
-});
-
+// 注: title/description は事実ベースの暫定コピー。最終的なブランド・タグライン
+// （hero/About の詩的コピー）は CEO 検討中。favicon / OG 画像は file-based
+// convention（app/icon.svg・app/apple-icon.svg・app/opengraph-image.tsx）で自動配線。
 export const metadata: Metadata = {
-  metadataBase: new URL(getSiteUrl()),
+  metadataBase: new URL(siteUrl),
   title: {
-    default: "Taro Photos | Professional Photography",
-    template: "%s | Taro Photos",
+    default: "Taro Shirai — Landscape Photography",
+    template: "%s — Taro Shirai",
   },
-  description: "Professional photography portfolio by Taro. Specializing in minimal, atmospheric, and storytelling photography.",
-  keywords: ["photography", "portfolio", "photographer", "minimal", "art"],
+  description:
+    "写真家 白井悠太郎（Taro Shirai）のポートフォリオ。風景・閾・余白をめぐる作品シリーズを収録。",
+  keywords: [
+    "Taro Shirai",
+    "白井悠太郎",
+    "風景写真",
+    "ポートフォリオ",
+    "landscape photography",
+    "Tokyo",
+  ],
+  authors: [{ name: "Taro Shirai" }],
+  creator: "Taro Shirai",
+  publisher: "Taro Shirai",
+  // 単一 URL の同時併記バイリンガル（EN 主導）。ロケール別 URL を持たないため
+  // hreflang alternates は付けず canonical のみ。言語は html lang="en" + 和字の
+  // lang="ja" で表現する。
+  alternates: {
+    canonical: "/",
+  },
   openGraph: {
     type: "website",
-    locale: "en_US",
-    url: "/",
-    siteName: "Taro Photos",
-    title: "Taro Photos | Professional Photography",
-    description: "Professional photography portfolio by Taro.",
-    images: [
-      {
-        url: "/og-image.jpg", // Ensure this image exists or is handled
-        width: 1200,
-        height: 630,
-        alt: "Taro Photos Portfolio",
-      },
-    ],
+    url: siteUrl,
+    title: "Taro Shirai — Landscape Photography",
+    description:
+      "写真家 白井悠太郎（Taro Shirai）のポートフォリオ。風景・閾・余白をめぐる作品シリーズ。",
+    siteName: "Taro Shirai",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Taro Photos",
-    description: "Professional photography portfolio by Taro.",
-    creator: "@tarophotos", // Replace with actual handle if available
+    title: "Taro Shirai — Landscape Photography",
+    description:
+      "写真家 白井悠太郎（Taro Shirai）のポートフォリオ。風景・閾・余白をめぐる作品シリーズ。",
   },
-  icons: {
-    icon: "/favicon.ico",
-  },
+};
+
+export const viewport = {
+  themeColor: "#f7f4ef",
+};
+
+const structuredData = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebSite",
+      name: "Taro Shirai",
+      url: siteUrl,
+      description:
+        "写真家 白井悠太郎（Taro Shirai）のポートフォリオ。風景・閾・余白をめぐる作品シリーズ。",
+      inLanguage: ["en", "ja"],
+      sameAs: socialProfileUrls,
+    },
+    {
+      "@type": "Organization",
+      name: "Taro Shirai",
+      url: siteUrl,
+      logo: `${siteUrl}/icon.svg`,
+      sameAs: socialProfileUrls,
+      contactPoint: [
+        {
+          "@type": "ContactPoint",
+          contactType: "Customer Service",
+          email: primaryContactEmail,
+          areaServed: "JP",
+          availableLanguage: ["Japanese", "English"],
+        },
+      ],
+    },
+  ],
 };
 
 export default function RootLayout({
@@ -58,8 +98,25 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${inter.variable} ${lato.variable}`}>
-      <body>{children}</body>
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link
+          rel="preconnect"
+          href="https://fonts.gstatic.com"
+          crossOrigin="anonymous"
+        />
+        <link rel="stylesheet" href={GOOGLE_FONTS_HREF} />
+        <JsonLd data={structuredData} />
+      </head>
+      <body className="antialiased">
+        <MotionProvider>
+          <ScrollTracker />
+          <SiteHeader />
+          <main>{children}</main>
+          <SiteFooter />
+        </MotionProvider>
+      </body>
     </html>
   );
 }

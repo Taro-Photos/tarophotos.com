@@ -1,6 +1,13 @@
-import { redirect } from 'next/navigation';
-import { defaultLocale } from '../../i18n.config';
+import { About } from "@/components/home/About";
+import { Hero } from "@/components/home/Hero";
+import { SeriesIndex } from "@/components/home/SeriesIndex";
 
-export default function RootPage() {
-  redirect(`/${defaultLocale}`);
+export default function Home() {
+  return (
+    <>
+      <Hero />
+      <SeriesIndex />
+      <About />
+    </>
+  );
 }

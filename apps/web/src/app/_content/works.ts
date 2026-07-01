@@ -2,18 +2,26 @@ import { seriesDetails, type SeriesDetails, type WorkTag } from "./series";
 
 export type WorkSeries = Pick<
   SeriesDetails,
-  "slug" | "title" | "year" | "location" | "category" | "palette" | "focus" | "synopsis" | "cover"
+  | "slug"
+  | "title"
+  | "year"
+  | "location"
+  | "palette"
+  | "focus"
+  | "synopsisEn"
+  | "synopsis"
+  | "cover"
 >;
 
 export const workSeries: WorkSeries[] = seriesDetails.map(
-  ({ slug, title, year, location, category, palette, focus, synopsis, cover }) => ({
+  ({ slug, title, year, location, palette, focus, synopsisEn, synopsis, cover }) => ({
     slug,
     title,
     year,
     location,
-    category,
     palette,
     focus,
+    synopsisEn,
     synopsis,
     cover,
   }),

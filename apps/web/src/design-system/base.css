@@ -1,0 +1,93 @@
+/* ============================================================
+   TARO Design System — Base + Components
+   グローバル基底（paper / ink / serif）と、横断で使う最小の
+   セマンティック・クラス（eyebrow / num / exif / ja / hair / wrap）。
+   tokens.css の後に import すること。
+   ============================================================ */
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    background: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-serif);
+    font-weight: 300;
+    line-height: var(--leading-body);
+    overflow-x: hidden;
+  }
+
+  ::selection {
+    background: var(--color-ink);
+    color: var(--color-paper);
+  }
+
+  /* 画像は被写体（写真が主役）。既定で block・余計な隙間を消す */
+  img {
+    display: block;
+    max-width: 100%;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+}
+
+@layer components {
+  /* 中央寄せのコンテンツ枠（measure 内・左右 gutter） */
+  .ds-wrap {
+    width: 100%;
+    max-width: var(--container-measure);
+    margin-inline: auto;
+    /* gutter は responsive: 狭幅 22px → 1440px 付近で demo と同じ 120px
+       （8.5vw が 1412px で 120 に到達） */
+    padding-inline: clamp(22px, 8.5vw, var(--spacing-gutter));
+  }
+
+  /* ヘアライン区切り */
+  .ds-hair {
+    border: 0;
+    border-top: 1px solid var(--color-hair);
+  }
+
+  /* 小見出しラベル（UI sans・広トラッキング・大文字） */
+  .ds-eyebrow {
+    font-family: var(--font-ui);
+    font-size: var(--text-ui);
+    font-weight: 400;
+    letter-spacing: var(--tracking-eyebrow);
+    text-transform: uppercase;
+    color: var(--color-warm-grey);
+  }
+
+  /* 連番・カウンタ（等幅数字） */
+  .ds-num {
+    font-family: var(--font-ui);
+    font-size: var(--text-ui);
+    font-weight: 400;
+    letter-spacing: var(--tracking-wider);
+    color: var(--color-warm-grey);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* EXIF・撮影メタ（極小 UI sans・等幅数字） */
+  .ds-exif {
+    font-family: var(--font-ui);
+    font-size: var(--text-ui-sm);
+    font-weight: 300;
+    letter-spacing: var(--tracking-wide);
+    color: var(--color-warm-grey);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* 和字アクセント（明朝） */
+  .ds-ja {
+    font-family: var(--font-mincho);
+    font-weight: 400;
+  }
+}

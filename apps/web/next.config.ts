@@ -1,11 +1,7 @@
 import type { NextConfig } from "next";
-import createNextIntlPlugin from 'next-intl/plugin';
-
-const withNextIntl = createNextIntlPlugin('./i18n.ts');
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
-  transpilePackages: ["@repo/ui"],
   images: {
     remotePatterns: [
       {
@@ -14,6 +10,9 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  // SES_* は server-only（api/contact のみ参照）。Amplify SSR で runtime に露出させる
+  // ため env に列挙する（app env だけでは undefined→500 になる既知挙動）。
+  // ⚠️ これらは絶対に client component で参照しないこと（build 時インライン化で漏れる）。
   env: {
     SES_REGION: process.env.SES_REGION,
     SES_FROM_EMAIL: process.env.SES_FROM_EMAIL,
@@ -23,4 +22,4 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default withNextIntl(nextConfig);
+export default nextConfig;

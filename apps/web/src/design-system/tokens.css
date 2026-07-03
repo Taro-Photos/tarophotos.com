@@ -1,0 +1,88 @@
+/* ============================================================
+   TARO Design System — Tokens (SSOT)
+   非公開・内部管理 / 写真関連プロダクト横断で再利用する想定。
+   出典: synth-revised（風景・閾・余白）— CEO 確定 2026-06-27。
+
+   美学: 生成り（paper）の上に墨（ink）。説明を削り、余白に
+   観る人の想いが宿る "間" を残す。Latin serif を主・和字を添える。
+
+   Tailwind v4 `@theme` で定義 → CSS 変数 + ユーティリティを生成。
+   例: bg-paper / text-ink / font-serif / text-display / tracking-eyebrow
+   ============================================================ */
+
+@theme {
+  /* ---- Color：4 つの核 + 最小の派生 ---- */
+  --color-paper: #f7f4ef; /* 生成り：基底の紙 */
+  --color-paper-deep: #f1ece4; /* セクション交互の微差 */
+  --color-ink: #1a1a1a; /* 墨：本文・見出し */
+  --color-warm-grey: #6b6157; /* 温灰：副次テキスト・メタ */
+  --color-hair: #e2dcd2; /* ヘアライン：区切り */
+
+  /* ---- Typography：3 書体（Latin serif 主・和字 mincho・UI sans）---- */
+  /* synth-revised.html と同一の Google Fonts を layout の <link> で読込。
+     literal な family 名で参照（demo と完全一致させるため）。
+     ⚠️ 実値の保証は globals.css の unlayered :root（Tailwind の
+     tree-shaking で @theme font 変数が :root に出ない問題への対策）。 */
+  --font-serif: "Cormorant Garamond", Georgia, serif;
+  --font-mincho: "Shippori Mincho", serif;
+  --font-ui: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+
+  /* ---- Type scale（responsive clamp / 行間を同梱）---- */
+  --text-display: clamp(56px, 9vw, 118px);
+  --text-display--line-height: 0.9;
+  --text-display--letter-spacing: -0.01em;
+
+  --text-title: clamp(36px, 5vw, 56px);
+  --text-title--line-height: 1.04;
+  --text-title--letter-spacing: -0.005em;
+
+  --text-heading: clamp(28px, 3.4vw, 40px);
+  --text-heading--line-height: 1.1;
+
+  --text-subhead: 22px;
+  --text-subhead--line-height: 1.25;
+
+  --text-lede: 18px;
+  --text-lede--line-height: 1.7;
+
+  --text-body: 15px;
+  --text-body--line-height: 1.7;
+
+  --text-meta: 12px;
+  --text-meta--line-height: 1.5;
+
+  --text-ui: 11px;
+  --text-ui--line-height: 1.4;
+
+  --text-ui-sm: 10.5px;
+  --text-ui-sm--line-height: 1.4;
+
+  /* ---- Tracking（letter-spacing）---- */
+  --tracking-tight: -0.01em;
+  --tracking-normal: 0em;
+  --tracking-mark: 0.16em;
+  --tracking-wide: 0.14em; /* exif */
+  --tracking-wider: 0.2em; /* num */
+  --tracking-nav: 0.24em;
+  --tracking-eyebrow: 0.34em;
+  --tracking-widest: 0.42em;
+
+  /* ---- Line-height（汎用）---- */
+  --leading-display: 0.9;
+  --leading-tight: 1.05;
+  --leading-snug: 1.3;
+  --leading-body: 1.5;
+  --leading-relaxed: 1.7;
+
+  /* ---- Layout：measure（最大幅）と gutter（左右余白）---- */
+  --container-measure: 1440px;
+  --spacing-gutter: 120px; /* デスクトップ。狭幅は base.css で縮小 */
+
+  /* ---- Motion：静かなイージング ---- */
+  --ease-ds: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-ds-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+
+  /* ---- Radius：ほぼ角（写真を邪魔しない）---- */
+  --radius-none: 0px;
+  --radius-hair: 1px;
+}

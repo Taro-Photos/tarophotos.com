@@ -1,25 +1,40 @@
-
 import Link from "next/link";
-
-export const metadata = {
-  title: "404 - Page Not Found",
-};
+import { Eyebrow } from "@/design-system";
+import styles from "./not-found.module.css";
 
 export default function NotFound() {
   return (
-    <div className="flex flex-col items-center justify-center min-h-[70vh] px-4 text-center">
-      <h1 className="text-6xl font-display font-medium mb-4 tracking-widest text-primary dark:text-white">
-        404
-      </h1>
-      <p className="text-lg text-gray-600 dark:text-gray-400 mb-8 tracking-wider">
-        PAGE NOT FOUND
-      </p>
-      <Link
-        href="/"
-        className="inline-block px-8 py-3 text-sm border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors tracking-[0.2em] uppercase"
-      >
-        BACK TO TOP
-      </Link>
-    </div>
+    <main className={styles.page}>
+      <div className="ds-wrap">
+        <div className={styles.inner}>
+          <Eyebrow className={styles.eyebrow}>Error 404</Eyebrow>
+
+          <h1 className={styles.title}>
+            Off the path
+            <span className={styles.line2}>out of frame</span>
+          </h1>
+
+          <p className={styles.ja} lang="ja">
+            その径は、まだ写されていない。
+          </p>
+
+          <p className={styles.lede}>
+            The page you were looking for has drifted out of frame. Nothing was lost —
+            it simply isn&rsquo;t here.
+          </p>
+
+          <hr className="ds-hair" />
+
+          <nav className={styles.links} aria-label="404 navigation">
+            <Link className={styles.link} href="/">
+              Return home
+            </Link>
+            <Link className={styles.link} href="/works">
+              The work
+            </Link>
+          </nav>
+        </div>
+      </div>
+    </main>
   );
 }

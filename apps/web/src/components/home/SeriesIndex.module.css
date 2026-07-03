@@ -1,0 +1,223 @@
+.series {
+  padding-top: clamp(72px, 11vw, 108px);
+  padding-bottom: clamp(72px, 11vw, 108px);
+}
+
+.head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: clamp(48px, 7vw, 80px);
+}
+.head h2 {
+  font-family: var(--font-serif);
+  font-weight: 300;
+  font-size: clamp(24px, 4vw, 30px);
+  letter-spacing: 0.02em;
+}
+.head h2 .ja {
+  font-family: var(--font-mincho);
+  font-size: 15px;
+  color: var(--color-warm-grey);
+  margin-left: 18px;
+  letter-spacing: 0.3em;
+}
+.headNum {
+  font-family: var(--font-ui);
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--color-warm-grey);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  transition: color 0.4s ease;
+}
+.headNum:hover {
+  color: var(--color-ink);
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+}
+
+.work {
+  display: grid;
+  grid-template-columns: 64px 1fr;
+  padding: clamp(40px, 6vw, 64px) 0;
+  border-top: 1px solid var(--color-hair);
+  align-items: start;
+}
+.work:last-child {
+  border-bottom: 1px solid var(--color-hair);
+}
+.workNo {
+  padding-top: 6px;
+}
+.workNo .num {
+  font-family: var(--font-ui);
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  color: var(--color-warm-grey);
+  font-variant-numeric: tabular-nums;
+}
+.body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  gap: 72px;
+  align-items: center;
+}
+.figure {
+  position: relative;
+  aspect-ratio: 3 / 2;
+  overflow: hidden;
+  background: var(--color-hair);
+}
+.figure :global(img) {
+  object-fit: cover;
+  transition: transform 1.4s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.work:hover .figure :global(img) {
+  transform: scale(1.025);
+}
+
+.meta {
+  padding-right: 12px;
+}
+.eyebrow {
+  display: block;
+  margin-bottom: 20px;
+  font-family: var(--font-ui);
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  color: var(--color-warm-grey);
+}
+.meta h3 {
+  font-family: var(--font-serif);
+  font-weight: 300;
+  font-size: clamp(30px, 4vw, 40px);
+  line-height: 1.05;
+  letter-spacing: 0.01em;
+  margin-bottom: 6px;
+}
+.meta h3 em {
+  font-style: italic;
+  color: var(--color-warm-grey);
+}
+.h3ja {
+  font-family: var(--font-mincho);
+  font-weight: 400;
+  font-size: 15px;
+  letter-spacing: 0.22em;
+  color: var(--color-ink);
+  margin-bottom: 26px;
+}
+.stamp {
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  color: var(--color-ink);
+  font-variant-numeric: tabular-nums;
+  margin-bottom: 4px;
+}
+/* EN-led: 英語の place を主（セリフ） */
+.place {
+  font-family: var(--font-serif);
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--color-ink);
+  margin-bottom: 26px;
+}
+/* 和字の place を副（明朝・淡く・EN の直下） */
+.placeJa {
+  font-family: var(--font-mincho);
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--color-warm-grey);
+  letter-spacing: 0.16em;
+  margin-top: 4px;
+}
+.exifLine {
+  padding-top: 16px;
+  border-top: 1px solid var(--color-hair);
+}
+.exif {
+  font-family: var(--font-ui);
+  font-size: 10.5px;
+  font-weight: 300;
+  letter-spacing: 0.14em;
+  color: var(--color-warm-grey);
+  font-variant-numeric: tabular-nums;
+}
+
+/* 半ばの "間" — 縦組み和字アクセント */
+.pause {
+  display: grid;
+  grid-template-columns: 64px 1fr;
+  padding: clamp(56px, 9vw, 96px) 0;
+}
+.pauseBody {
+  display: flex;
+  align-items: center;
+  gap: 64px;
+}
+.tate {
+  writing-mode: vertical-rl;
+  font-family: var(--font-mincho);
+  font-weight: 400;
+  font-size: 22px;
+  letter-spacing: 0.5em;
+  line-height: 2.1;
+  color: var(--color-ink);
+  height: 320px;
+}
+.tate small {
+  font-size: 13px;
+  color: var(--color-warm-grey);
+  letter-spacing: 0.4em;
+}
+.pauseText {
+  max-width: 440px;
+}
+.pauseText p {
+  font-size: clamp(20px, 3vw, 23px);
+  line-height: 1.7;
+  font-weight: 300;
+  color: var(--color-ink);
+}
+.pauseText p .warm {
+  color: var(--color-warm-grey);
+  font-style: italic;
+}
+.sig {
+  font-family: var(--font-ui);
+  font-size: 10.5px;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--color-warm-grey);
+  margin-top: 32px;
+}
+
+@media (max-width: 900px) {
+  .work {
+    grid-template-columns: 40px 1fr;
+  }
+  .body {
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+  .pause {
+    grid-template-columns: 40px 1fr;
+  }
+  .pauseBody {
+    gap: 36px;
+  }
+  .tate {
+    height: 240px;
+    font-size: 19px;
+  }
+}

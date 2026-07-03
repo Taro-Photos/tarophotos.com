@@ -41,14 +41,14 @@ export const journalIndex: JournalMeta[] = [
     slug: "waiting-for-first-light",
     title: "夜明けを、待つということ",
     titleEn: "Waiting for First Light",
-    date: "2026-07-04",
+    date: "2026-01-03",
     excerpt:
-      "港がまだ暗いうちに三脚を立て、光が来るのを待つ。撮ることより、待つことの方がずっと長い。First Light Voyage の撮影ノートから。",
+      "元日の朝、まだ暗いうちに富士川町の髙下へ上がる。富士山頂に太陽が重なるダイヤモンド富士を、ただ待つ。新富嶽百景「日出づる里」で迎えた初日の出のこと。",
     kind: "essay",
-    tags: ["essay", "dawn", "tokyo-bay"],
+    tags: ["essay", "diamond-fuji", "hatsuhinode"],
     cover: {
       src: "/series-gallery/first-light-voyage/first-light-voyage-01.webp",
-      alt: "夜明け前の港、水面に最初の光がにじむ",
+      alt: "夜明け前、富士川町髙下の空がゆっくり色を変えていく",
       width: 2560,
       height: 1707,
     },

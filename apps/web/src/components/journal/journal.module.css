@@ -133,6 +133,67 @@
   margin: clamp(48px, 6vw, 72px) auto;
 }
 
+/* 箇条書き */
+.ul {
+  margin: 0 0 1.9em;
+  padding-left: 1.5em;
+  list-style: none;
+}
+.li {
+  font-family: var(--font-mincho);
+  font-size: 16px;
+  line-height: 1.9;
+  color: var(--color-ink);
+  margin-bottom: 0.5em;
+  position: relative;
+}
+.ul > .li::before {
+  content: "—";
+  position: absolute;
+  left: -1.5em;
+  color: var(--color-warm-grey);
+}
+.ol {
+  counter-reset: ol;
+}
+.ol > .li {
+  counter-increment: ol;
+}
+.ol > .li::before {
+  content: counter(ol) ".";
+  position: absolute;
+  left: -1.6em;
+  color: var(--color-warm-grey);
+  font-variant-numeric: tabular-nums;
+}
+
+/* 本文中リンク・強調（作品へのリンク＝ .workLink 含む） */
+.p a,
+.lead a,
+.li a,
+.workLink {
+  color: var(--color-ink);
+  text-decoration: none;
+  border-bottom: 1px solid var(--color-hair);
+  transition: border-color 0.4s ease;
+}
+.p a:hover,
+.lead a:hover,
+.li a:hover,
+.workLink:hover {
+  border-bottom-color: var(--color-ink);
+}
+.p em,
+.lead em,
+.li em {
+  font-style: italic;
+}
+.p strong,
+.lead strong,
+.li strong {
+  font-weight: 600;
+}
+
 /* 本文中の写真（prose の measure より広く見せる） */
 .photo {
   margin: clamp(40px, 6vw, 72px) 0;

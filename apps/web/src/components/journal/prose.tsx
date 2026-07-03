@@ -1,10 +1,12 @@
 import Image from "next/image";
+import Link from "next/link";
 import type { ReactNode } from "react";
 import styles from "./journal.module.css";
 
 type Lang = "ja" | "en";
 
-/** 本文段落。既定は和字（明朝）。英文段落は lang="en"。 */
+/** 本文段落。既定は和字（明朝）。英文段落は lang="en"。
+ *  リンク・強調を入れたい段落はこれを使い、children に JSX を混ぜる。 */
 export function P({
   children,
   lang = "ja",
@@ -16,6 +18,32 @@ export function P({
     <p className={styles.p} lang={lang}>
       {children}
     </p>
+  );
+}
+
+/** 長文を「つらつら」書くための塊。空行で段落に自動分割される（note と同じ感覚）。
+ *  例: <Prose>{`一段落目。\n\n二段落目。\n\n三段落目。`}</Prose>
+ *  リンクや強調が必要な段落だけ <P> を併用する。 */
+export function Prose({
+  children,
+  lang = "ja",
+}: {
+  children: string;
+  lang?: Lang;
+}) {
+  const paragraphs = children
+    .trim()
+    .split(/\n\s*\n/)
+    .map((block) => block.trim())
+    .filter(Boolean);
+  return (
+    <>
+      {paragraphs.map((text, i) => (
+        <p className={styles.p} lang={lang} key={i}>
+          {text}
+        </p>
+      ))}
+    </>
   );
 }
 
@@ -61,6 +89,46 @@ export function Quote({
     <blockquote className={styles.quote} lang={lang}>
       {children}
     </blockquote>
+  );
+}
+
+/** 箇条書き。 */
+export function Ul({ children }: { children: ReactNode }) {
+  return <ul className={styles.ul}>{children}</ul>;
+}
+
+/** 番号付きリスト。 */
+export function Ol({ children }: { children: ReactNode }) {
+  return <ol className={`${styles.ul} ${styles.ol}`}>{children}</ol>;
+}
+
+/** リスト項目。 */
+export function Li({
+  children,
+  lang = "ja",
+}: {
+  children: ReactNode;
+  lang?: Lang;
+}) {
+  return (
+    <li className={styles.li} lang={lang}>
+      {children}
+    </li>
+  );
+}
+
+/** 作品（シリーズ）への本文中リンク。作品集について書くときに使う。 */
+export function WorkLink({
+  slug,
+  children,
+}: {
+  slug: string;
+  children: ReactNode;
+}) {
+  return (
+    <Link className={styles.workLink} href={`/works/${slug}`}>
+      {children}
+    </Link>
   );
 }
 

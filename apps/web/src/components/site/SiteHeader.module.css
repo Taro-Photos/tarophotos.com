@@ -45,3 +45,21 @@
 
 /* JA line-break（review 2026-07-03）: 氏名ラベル。 */
 .sub { word-break: keep-all; overflow-wrap: anywhere; }
+
+/* 狭幅（<375px・iPhone SE 1st gen 等）でヘッダ1行が収まらず nav が横はみ出し
+   （320px で 41px overflow）していたため、ブランド/ナビを縮小して収める。
+   375px 以上は従来デザインのまま。 */
+@media (max-width: 374px) {
+  .inner {
+    gap: 14px;
+  }
+  .mark {
+    font-size: 17px;
+    letter-spacing: 0.08em;
+  }
+  .nav {
+    gap: 13px;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+  }
+}

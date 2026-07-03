@@ -27,7 +27,7 @@ export function Hero() {
               <span className={styles.metaLabel}>Latest</span>
               <span className={styles.metaVal}>
                 First Light
-                <span className={styles.jaInline} lang="ja"> ／ 軒の閾</span>
+                <span className={styles.jaInline} lang="ja"> ／ 初日の出</span>
               </span>
             </div>
           </div>
@@ -35,15 +35,15 @@ export function Hero() {
           <figure className={styles.figure}>
             <Image
               src={HERO_IMAGE}
-              alt="First light on old roof tiles at Takaori before dawn"
+              alt="Diamond Fuji — first light cresting the summit over Hiizuru-no-Sato"
               fill
               priority
               sizes="(max-width: 900px) 100vw, 820px"
             />
             <figcaption className={styles.figcaption}>
-              <div className={styles.cap}>06:47 — 日出づる里, eaves before the sun</div>
+              <div className={styles.cap}>07:24 — 日出づる里, first light on the summit</div>
               <div className={styles.capJa} lang="ja">
-                夜明け前、瓦に最初の温度
+                山頂に太陽が重なる、一年最初の光。
               </div>
             </figcaption>
           </figure>

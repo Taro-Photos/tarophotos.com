@@ -111,4 +111,4 @@ export const featuredSeries: FeaturedWork[] = [
 ];
 
 export const HERO_IMAGE =
-  "/series-gallery/first-light-voyage/first-light-voyage-01.webp";
+  "/series-gallery/first-light-voyage/first-light-voyage-03.webp";

@@ -48,7 +48,7 @@ export default function Page() {
           width={2560}
           height={1707}
           caption="日の出の少し前。まだ色の名前がつかない時間。"
-          meta="07:04 · 富士川町 髙下"
+          meta="07:04 · 日出づる里"
         />
 
         <H2>この作品集について</H2>
@@ -93,7 +93,7 @@ export default function Page() {
           width={2560}
           height={1707}
           caption="山頂に、光がひとつ乗る。待っていた分だけ、静かに来る。"
-          meta="07:21 · 髙下 高村光太郎文学碑"
+          meta="07:21 · 日出づる里 高村光太郎文学碑"
         />
 
         <Prose>{`

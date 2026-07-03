@@ -48,7 +48,7 @@ export const journalIndex: JournalMeta[] = [
     tags: ["essay", "diamond-fuji", "hatsuhinode"],
     cover: {
       src: "/series-gallery/first-light-voyage/first-light-voyage-01.webp",
-      alt: "夜明け前、富士川町髙下の空がゆっくり色を変えていく",
+      alt: "夜明け前、日出づる里の空がゆっくり色を変えていく",
       width: 2560,
       height: 1707,
     },

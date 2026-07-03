@@ -150,3 +150,8 @@
     order: 1;
   }
 }
+
+/* JA line-break（review 2026-07-03）: 短句アクセントは句途中で割らない（「迎」等の孤立防止）。
+   長文は Hero に無い。globals の [lang="ja"]{line-break:strict} と併用。 */
+.jaInline { word-break: keep-all; overflow-wrap: anywhere; }
+.capJa { word-break: keep-all; overflow-wrap: anywhere; }

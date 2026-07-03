@@ -154,3 +154,7 @@
     align-items: flex-start;
   }
 }
+
+/* JA line-break（review 2026-07-03）: 『(任意)』ラベルのみ。
+   .notice/.doneJa/.error（長文）には付けない。 */
+.optional { word-break: keep-all; overflow-wrap: anywhere; }

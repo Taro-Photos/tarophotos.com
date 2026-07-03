@@ -42,3 +42,6 @@
 .nav a:hover {
   color: var(--color-ink);
 }
+
+/* JA line-break（review 2026-07-03）: 氏名ラベル。 */
+.sub { word-break: keep-all; overflow-wrap: anywhere; }

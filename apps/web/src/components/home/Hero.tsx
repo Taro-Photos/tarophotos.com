@@ -41,7 +41,7 @@ export function Hero() {
               sizes="(max-width: 900px) 100vw, 820px"
             />
             <figcaption className={styles.figcaption}>
-              <div className={styles.cap}>06:47 — 富士川町 髙下, eaves before the sun</div>
+              <div className={styles.cap}>06:47 — 日出づる里, eaves before the sun</div>
               <div className={styles.capJa} lang="ja">
                 夜明け前、瓦に最初の温度
               </div>

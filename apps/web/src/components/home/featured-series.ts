@@ -33,7 +33,7 @@ export const featuredSeries: FeaturedWork[] = [
     title: "Resonance",
     titleEm: "—",
     titleJa: "軒先に降りる、最初の光",
-    stamp: "06:47 · 富士川町 髙下",
+    stamp: "06:47 · 日出づる里",
     placeEn: "The few minutes before old roof tiles take on warmth.",
     place: "古い屋根瓦が温度を受け取る前の数分",
     exif: "SONY α7 IV · 70-200mm F2.8 GM · 70mm · ƒ/3.5 · 1/500s · ISO 5000",

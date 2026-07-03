@@ -35,13 +35,13 @@ export function Hero() {
           <figure className={styles.figure}>
             <Image
               src={HERO_IMAGE}
-              alt="First light over the harbor before dawn"
+              alt="First light on old roof tiles at Takaori before dawn"
               fill
               priority
               sizes="(max-width: 900px) 100vw, 820px"
             />
             <figcaption className={styles.figcaption}>
-              <div className={styles.cap}>04:52 — 那須塩原, eaves before the sun</div>
+              <div className={styles.cap}>06:52 — 富士川町 髙下, eaves before the sun</div>
               <div className={styles.capJa} lang="ja">
                 夜明け前、瓦に最初の温度
               </div>

@@ -149,3 +149,10 @@
     gap: 12px;
   }
 }
+
+/* JA line-break（review 2026-07-03）: 見出し/ラベル/リンク（短句）。
+   .sectionBody/.notes/.fieldValue（本文）は除外し通常折返しのまま。 */
+.blockTitle .ja { word-break: keep-all; overflow-wrap: anywhere; }
+.sectionHeading { word-break: keep-all; overflow-wrap: anywhere; }
+.fieldLabel { word-break: keep-all; overflow-wrap: anywhere; }
+.contactLink { word-break: keep-all; overflow-wrap: anywhere; }

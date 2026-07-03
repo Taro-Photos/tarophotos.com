@@ -139,3 +139,6 @@
     gap: 8px;
   }
 }
+
+/* JA line-break（review 2026-07-03）: inline 併記『作品』。.synopsisJa（本文）は除外。 */
+.title .ja { word-break: keep-all; overflow-wrap: anywhere; }

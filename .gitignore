@@ -36,3 +36,13 @@ coverage/
 
 # Misc
 *.tsbuildinfo
+
+# design-sync (claude.ai/design sync). Durable inputs under .design-sync/ ARE
+# committed (config.json, NOTES.md, conventions.md, previews/, overrides/, and
+# the build scripts); generated output and fetched assets are not.
+.ds-sync/
+/ds-bundle/
+.design-sync/.cache/
+.design-sync/learnings/
+.design-sync/fonts-src/
+.design-sync/node_modules

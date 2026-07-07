@@ -1,0 +1,41 @@
+{
+  "projectId": "8243c2c1-4bf4-4a35-8063-b50e6583ec15",
+  "projectName": "Tarophotos DS",
+  "pkg": "@taro/design-system",
+  "globalName": "TaroDS",
+  "shape": "package",
+  "buildCmd": "bash .design-sync/build-assets.sh",
+  "entry": ".design-sync/dist/ds.mjs",
+  "srcDir": "apps/web/src",
+  "cssEntry": ".design-sync/dist/cssentry.css",
+  "extraFonts": [".design-sync/fonts-src/fonts.css"],
+  "readmeHeader": ".design-sync/conventions.md",
+  "overrides": {
+    "Hero": { "cardMode": "column" },
+    "About": { "cardMode": "column" },
+    "SeriesIndex": { "cardMode": "column" },
+    "SiteHeader": { "cardMode": "column" },
+    "SiteFooter": { "cardMode": "column" },
+    "LegalPage": { "cardMode": "column" },
+    "WorksIndex": { "cardMode": "column" },
+    "SeriesDetail": { "cardMode": "column" }
+  },
+  "componentSrcMap": {
+    "Wrap": "apps/web/src/design-system/primitives.tsx",
+    "Hairline": "apps/web/src/design-system/primitives.tsx",
+    "Eyebrow": "apps/web/src/design-system/primitives.tsx",
+    "Num": "apps/web/src/design-system/primitives.tsx",
+    "Exif": "apps/web/src/design-system/primitives.tsx",
+    "Ja": "apps/web/src/design-system/primitives.tsx",
+    "Bi": "apps/web/src/design-system/primitives.tsx",
+    "Hero": "apps/web/src/components/home/Hero.tsx",
+    "About": "apps/web/src/components/home/About.tsx",
+    "SeriesIndex": "apps/web/src/components/home/SeriesIndex.tsx",
+    "SiteHeader": "apps/web/src/components/site/SiteHeader.tsx",
+    "SiteFooter": "apps/web/src/components/site/SiteFooter.tsx",
+    "ContactForm": "apps/web/src/components/contact/ContactForm.tsx",
+    "WorksIndex": "apps/web/src/components/works/WorksIndex.tsx",
+    "SeriesDetail": "apps/web/src/components/series/SeriesDetail.tsx",
+    "LegalPage": "apps/web/src/components/legal/LegalPage.tsx"
+  }
+}

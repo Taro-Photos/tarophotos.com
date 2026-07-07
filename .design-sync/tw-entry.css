@@ -1,0 +1,33 @@
+/* Tailwind v4 compile entry for design-sync — mirrors apps/web/src/app/globals.css
+   (@import tailwindcss → tokens SSOT → base) but adds @source globs so the
+   utilities used by the primitives, the composed sections, the /ds showcase,
+   and the authored previews are all generated into a static stylesheet.
+   Output is fed to package-build via cfg.cssEntry. */
+
+@import "tailwindcss";
+
+/* Content scanned for utility generation. */
+@source "../apps/web/src/**/*.{tsx,ts,jsx,js}";
+@source "./previews/**/*.{tsx,ts}";
+
+/* Eagerly emit the FULL token-utility surface so the design agent can build
+   on-brand designs with any DS token, not just the ones the app happens to use
+   today (Tailwind v4 is on-demand — unused utilities would otherwise be gone). */
+@source inline("{bg,text,border}-{paper,paper-deep,ink,warm-grey,hair}");
+@source inline("font-{serif,mincho,ui}");
+@source inline("text-{display,title,heading,subhead,lede,body,meta,ui,ui-sm}");
+@source inline("tracking-{tight,normal,mark,wide,wider,nav,eyebrow,widest}");
+@source inline("leading-{display,tight,snug,body,relaxed}");
+
+/* DS tokens (SSOT — @theme) then base/components (.ds-*). */
+@import "../apps/web/src/design-system/tokens.css";
+@import "../apps/web/src/design-system/base.css";
+
+/* Font families declared unlayered — Tailwind v4 tree-shakes @theme font vars
+   not "seen" in scanned content; the app guarantees them the same way in
+   globals.css so CSS-module var(--font-*) always resolves. */
+:root {
+  --font-serif: "Cormorant Garamond", Georgia, serif;
+  --font-mincho: "Shippori Mincho", serif;
+  --font-ui: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+}

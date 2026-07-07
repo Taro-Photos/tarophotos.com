@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import "./globals.css";
 import { GOOGLE_FONTS_HREF } from "@/design-system";
 import { SiteHeader } from "@/components/site/SiteHeader";
@@ -12,6 +13,11 @@ import { getSiteUrl } from "./_lib/site";
 
 const siteUrl = getSiteUrl();
 const socialProfileUrls = footerSocialLinks.map((link) => link.href);
+
+// Google Tag Manager（無料）。_lib/analytics.ts が push する dataLayer を GTM が
+// 消費し、GA4 へは GTM 側のタグ設定で接続する。NEXT_PUBLIC_GTM_ID 未設定の
+// 環境（ローカル・プレビュー）では何もロードしない。
+const gtmId = process.env.NEXT_PUBLIC_GTM_ID;
 
 // 注: title/description は事実ベースの暫定コピー。最終的なブランド・タグライン
 // （hero/About の詩的コピー）は CEO 検討中。favicon / OG 画像は file-based
@@ -108,8 +114,23 @@ export default function RootLayout({
         />
         <link rel="stylesheet" href={GOOGLE_FONTS_HREF} />
         <JsonLd data={structuredData} />
+        {gtmId ? (
+          <Script id="gtm-loader" strategy="afterInteractive">
+            {`(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','${gtmId}');`}
+          </Script>
+        ) : null}
       </head>
       <body className="antialiased">
+        {gtmId ? (
+          <noscript>
+            <iframe
+              src={`https://www.googletagmanager.com/ns.html?id=${gtmId}`}
+              height="0"
+              width="0"
+              style={{ display: "none", visibility: "hidden" }}
+            />
+          </noscript>
+        ) : null}
         <MotionProvider>
           <ScrollTracker />
           <SiteHeader />

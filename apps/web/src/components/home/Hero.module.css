@@ -26,6 +26,19 @@
   padding-left: 0.04em;
 }
 
+/* タグライン: EN（line2）と JA は別のことを言い、往復して意味が閉じる。
+   時（流れる悠久の時）と瞬間（切り取られた一枚）の境目を撮る、というコンセプト。 */
+.tagJa {
+  font-family: var(--font-mincho);
+  font-weight: 400;
+  font-size: clamp(15px, 2vw, 19px);
+  color: var(--color-warm-grey);
+  letter-spacing: 0.12em;
+  margin-top: clamp(16px, 2.4vw, 26px);
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
 .ja {
   font-family: var(--font-mincho);
   font-weight: 400;

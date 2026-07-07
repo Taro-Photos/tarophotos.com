@@ -6,7 +6,7 @@ import { getSiteUrl } from "../_lib/site";
 
 const siteUrl = getSiteUrl();
 const description =
-  "Taro Shirai の随筆・撮影ノート。風景と、閾と、余白をめぐる書きもの。";
+  "Taro Shirai の随筆・撮影ノート。風景と、境目と、余白をめぐる書きもの。";
 
 const fallbackOgImage = {
   src: "/hero-main.png",

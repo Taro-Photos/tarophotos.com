@@ -41,7 +41,7 @@ export default function DesignSystemPage() {
           <span className="italic">foundation.</span>
         </h1>
         <p className="font-mincho text-warm-grey text-subhead mt-6">
-          風景・閾・余白 — 写真関連プロダクト横断の視覚言語
+          風景・境目・余白 — 写真関連プロダクト横断の視覚言語
         </p>
 
         <Hairline className="my-20" />
@@ -101,7 +101,7 @@ export default function DesignSystemPage() {
               </p>
               <p className="font-serif text-heading mt-3">Taro Shirai</p>
               <p className="font-serif text-lede mt-1 italic">
-                landscape, at the threshold
+                Time passes. One frame stays.
               </p>
             </div>
             <div>

@@ -61,6 +61,11 @@ const STATIC_ROUTES: Array<{
     lastModified: latestJournalTimestamp ?? defaultTimestamp,
   },
   {
+    path: "/concept",
+    changeFrequency: "yearly",
+    lastModified: defaultTimestamp,
+  },
+  {
     path: "/legal",
     changeFrequency: "yearly",
     lastModified: legalTimestamp,

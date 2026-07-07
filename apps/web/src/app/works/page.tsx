@@ -6,7 +6,7 @@ import { getSiteUrl } from "../_lib/site";
 
 const siteUrl = getSiteUrl();
 const worksDescription =
-  "Taro Shirai の作品索引。風景・閾・余白をめぐるシリーズ群を一覧できます。";
+  "Taro Shirai の作品索引。風景・境目・余白をめぐるシリーズ群を一覧できます。";
 
 const fallbackOgImage = {
   src: "/hero-main.png",

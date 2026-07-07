@@ -29,7 +29,7 @@ export const metadata: Metadata = {
     template: "%s — Taro Shirai",
   },
   description:
-    "写真家 白井悠太郎（Taro Shirai）のポートフォリオ。風景・閾・余白をめぐる作品シリーズを収録。",
+    "写真家 白井悠太郎（Taro Shirai）のポートフォリオ。風景・境目・余白をめぐる作品シリーズを収録。",
   keywords: [
     "Taro Shirai",
     "白井悠太郎",
@@ -52,14 +52,14 @@ export const metadata: Metadata = {
     url: siteUrl,
     title: "Taro Shirai — Landscape Photography",
     description:
-      "写真家 白井悠太郎（Taro Shirai）のポートフォリオ。風景・閾・余白をめぐる作品シリーズ。",
+      "写真家 白井悠太郎（Taro Shirai）のポートフォリオ。風景・境目・余白をめぐる作品シリーズ。",
     siteName: "Taro Shirai",
   },
   twitter: {
     card: "summary_large_image",
     title: "Taro Shirai — Landscape Photography",
     description:
-      "写真家 白井悠太郎（Taro Shirai）のポートフォリオ。風景・閾・余白をめぐる作品シリーズ。",
+      "写真家 白井悠太郎（Taro Shirai）のポートフォリオ。風景・境目・余白をめぐる作品シリーズ。",
   },
 };
 
@@ -75,7 +75,7 @@ const structuredData = {
       name: "Taro Shirai",
       url: siteUrl,
       description:
-        "写真家 白井悠太郎（Taro Shirai）のポートフォリオ。風景・閾・余白をめぐる作品シリーズ。",
+        "写真家 白井悠太郎（Taro Shirai）のポートフォリオ。風景・境目・余白をめぐる作品シリーズ。",
       inLanguage: ["en", "ja"],
       sameAs: socialProfileUrls,
     },

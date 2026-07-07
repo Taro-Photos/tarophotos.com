@@ -7,10 +7,13 @@ export function Hero() {
     <section className={styles.hero}>
       <div className="ds-wrap">
         <div className={styles.head}>
-          <h1 className={styles.title}>
-            Taro Shirai
-            <span className={styles.line2}>landscape, at the threshold</span>
-          </h1>
+          <div className={styles.headMain}>
+            <h1 className={styles.title}>
+              Taro Shirai
+              <span className={styles.line2}>Time passes. One frame stays.</span>
+            </h1>
+            <p className={styles.tagJa} lang="ja">時と瞬間の、境目を。</p>
+          </div>
           <div className={styles.ja}>
             <span lang="ja">風景写真家</span>
             <small lang="en">Tokyo / since 2016</small>

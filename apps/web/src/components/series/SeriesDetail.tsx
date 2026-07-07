@@ -108,7 +108,7 @@ export function SeriesDetail({ data }: { data: SeriesDetails }) {
               Continue through the index.
             </h2>
             <p className={styles.ctaBody} lang="ja">
-              他のシリーズも、同じ閾（しきい）のそばで待っています。プリント・撮影のご相談も歓迎します。
+              他のシリーズも、同じ境目のそばで待っています。プリント・撮影のご相談も歓迎します。
             </p>
           </div>
           <div className={styles.ctaLinks}>

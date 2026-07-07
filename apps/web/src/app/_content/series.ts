@@ -188,8 +188,8 @@ const baseSeriesDetails: SeriesDetails[] = [
     relatedCta: {
       heading: "ナイトシティ撮影のご相談はこちら",
       body: "広告や自治体プロモーション向けに、ロケハンから長時間露光の演出まで一括でプランニングします。",
-      href: "/services",
-      label: "Servicesを見る",
+      href: "/contact",
+      label: "お問い合わせへ",
     },
   },
   {
@@ -267,8 +267,8 @@ const baseSeriesDetails: SeriesDetails[] = [
     relatedCta: {
       heading: "ナイトスナップのご相談",
       body: "渋谷エリアの夜間撮影では人流制御や機材制限に合わせたプランニングをご案内します。",
-      href: "/services",
-      label: "Servicesを見る",
+      href: "/contact",
+      label: "お問い合わせへ",
     },
   },
   {
@@ -386,8 +386,8 @@ const baseSeriesDetails: SeriesDetails[] = [
     relatedCta: {
       heading: "商店街・ナイトロケのご相談",
       body: "観光地のアーケード撮影では混雑時間帯の調整や、許諾が必要な場合の窓口整理までサポートします。",
-      href: "/services",
-      label: "Servicesを見る",
+      href: "/contact",
+      label: "お問い合わせへ",
     },
   },
   {
@@ -569,8 +569,8 @@ const baseSeriesDetails: SeriesDetails[] = [
     relatedCta: {
       heading: "街歩きロケのご相談",
       body: "運河沿いのロケーションでは、人の流れと街灯の配置を踏まえた絵作りを含めてご提案します。",
-      href: "/services",
-      label: "Servicesを見る",
+      href: "/contact",
+      label: "お問い合わせへ",
     },
   },
   {
@@ -696,8 +696,8 @@ const baseSeriesDetails: SeriesDetails[] = [
     relatedCta: {
       heading: "ナイトシティ撮影のご相談",
       body: "港町や水辺での長時間露光が必要な案件では、潮汐と風速を考慮したロケーション設計をご提案します。",
-      href: "/services",
-      label: "Servicesを見る",
+      href: "/contact",
+      label: "お問い合わせへ",
     },
   },
   {
@@ -966,8 +966,8 @@ const baseSeriesDetails: SeriesDetails[] = [
     relatedCta: {
       heading: "展望ロケーション撮影のご相談",
       body: "三脚制限や入場制限がある施設での撮影も、時間帯調整や申請を含めてコーディネートします。",
-      href: "/services",
-      label: "Servicesを見る",
+      href: "/contact",
+      label: "お問い合わせへ",
     },
   },
   {
@@ -1269,8 +1269,8 @@ const baseSeriesDetails: SeriesDetails[] = [
     relatedCta: {
       heading: "撮影のご相談はこちら",
       body: "シリーズに合わせたロケーション提案やスケジュール設計から撮影・納品まで一貫して対応します。",
-      href: "/services",
-      label: "Servicesを見る",
+      href: "/contact",
+      label: "お問い合わせへ",
     },
   },
   {
@@ -1396,8 +1396,8 @@ const baseSeriesDetails: SeriesDetails[] = [
     relatedCta: {
       heading: "企業イベント撮影のご相談はこちら",
       body: "朝の時間帯に合わせた段取りと機動力ある撮影体制で、空気感を逃さず記録します。",
-      href: "/services",
-      label: "Servicesを見る",
+      href: "/contact",
+      label: "お問い合わせへ",
     },
   },
   {
@@ -1523,8 +1523,8 @@ const baseSeriesDetails: SeriesDetails[] = [
     relatedCta: {
       heading: "季節キャンペーン撮影のご相談はこちら",
       body: "桜や季節の移ろいを活かした観光・企業案件に合わせ、事前ロケと光のコントロールをご提案します。",
-      href: "/services",
-      label: "Servicesを見る",
+      href: "/contact",
+      label: "お問い合わせへ",
     },
   },
   {
@@ -1650,8 +1650,8 @@ const baseSeriesDetails: SeriesDetails[] = [
     relatedCta: {
       heading: "観光・地域ブランディングの撮影相談",
       body: "山岳や湖沼の撮影では天候待機や複数日程のレイヤー構成までサポートします。",
-      href: "/services",
-      label: "Servicesを見る",
+      href: "/contact",
+      label: "お問い合わせへ",
     },
   },
   {
@@ -1777,8 +1777,8 @@ const baseSeriesDetails: SeriesDetails[] = [
     relatedCta: {
       heading: "ナイトロケーションのご相談はこちら",
       body: "港湾エリアやウォーターフロントの案件に、ドローンやタイムラプスを組み合わせた提案が可能です。",
-      href: "/services",
-      label: "Servicesを見る",
+      href: "/contact",
+      label: "お問い合わせへ",
     },
   },
   {
@@ -1904,8 +1904,8 @@ const baseSeriesDetails: SeriesDetails[] = [
     relatedCta: {
       heading: "ウィンターイベントの撮影相談",
       body: "雪山や初日の出など寒冷地ロケでは、安全管理と機材冗長化を含めた体制をご用意します。",
-      href: "/services",
-      label: "Servicesを見る",
+      href: "/contact",
+      label: "お問い合わせへ",
     },
   },
   {
@@ -2031,8 +2031,8 @@ const baseSeriesDetails: SeriesDetails[] = [
     relatedCta: {
       heading: "公園ロケのご相談はこちら",
       body: "都市公園での撮影では、開園前後のローケーション確保から動植物への配慮まで一括でサポートします。",
-      href: "/services",
-      label: "Servicesを見る",
+      href: "/contact",
+      label: "お問い合わせへ",
     },
   },
   {
@@ -2158,8 +2158,8 @@ const baseSeriesDetails: SeriesDetails[] = [
     relatedCta: {
       heading: "街歩きロケのご相談はこちら",
       body: "ナイトロケでは水辺や路地を組み合わせたプランニングと、移動導線の安全管理まで対応します。",
-      href: "/services",
-      label: "Servicesを見る",
+      href: "/contact",
+      label: "お問い合わせへ",
     },
   },
   {
@@ -2285,8 +2285,8 @@ const baseSeriesDetails: SeriesDetails[] = [
     relatedCta: {
       heading: "寺社ロケーション撮影のご相談",
       body: "歴史的エリアでの撮影では、時間帯の許可取りや混雑回避の導線設計までお任せください。",
-      href: "/services",
-      label: "Servicesを見る",
+      href: "/contact",
+      label: "お問い合わせへ",
     },
   },
   {
@@ -2412,8 +2412,8 @@ const baseSeriesDetails: SeriesDetails[] = [
     relatedCta: {
       heading: "ロケハン同行のご相談",
       body: "街と緑が交差するエリアでの撮影では、歩行導線の確保や許認可の確認までまとめてサポートします。",
-      href: "/services",
-      label: "Servicesを見る",
+      href: "/contact",
+      label: "お問い合わせへ",
     },
   },
   {
@@ -2528,8 +2528,8 @@ const baseSeriesDetails: SeriesDetails[] = [
     relatedCta: {
       heading: "出張同行撮影のご相談",
       body: "移動を伴う案件では、スケジュール管理やバックアップ体制まで含めたロケ構成をご提案します。",
-      href: "/services",
-      label: "Servicesを見る",
+      href: "/contact",
+      label: "お問い合わせへ",
     },
   },
   {
@@ -2677,8 +2677,8 @@ const baseSeriesDetails: SeriesDetails[] = [
     relatedCta: {
       heading: "夜景・展望撮影のご相談",
       body: "展望施設や坂道での撮影では、三脚制限への対応や時間帯の調整を含めたプランをご提案します。",
-      href: "/services",
-      label: "Servicesを見る",
+      href: "/contact",
+      label: "お問い合わせへ",
     },
   },
   {
@@ -2859,8 +2859,8 @@ const baseSeriesDetails: SeriesDetails[] = [
     relatedCta: {
       heading: "撮影のご相談はこちら",
       body: "シリーズに合わせたロケーション提案やスケジュール設計から撮影・納品まで一貫して対応します。",
-      href: "/services",
-      label: "Servicesを見る",
+      href: "/contact",
+      label: "お問い合わせへ",
     },
   },
 ];

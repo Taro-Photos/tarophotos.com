@@ -66,6 +66,16 @@ const STATIC_ROUTES: Array<{
     lastModified: defaultTimestamp,
   },
   {
+    path: "/about",
+    changeFrequency: "monthly",
+    lastModified: defaultTimestamp,
+  },
+  {
+    path: "/contact",
+    changeFrequency: "yearly",
+    lastModified: defaultTimestamp,
+  },
+  {
     path: "/legal",
     changeFrequency: "yearly",
     lastModified: legalTimestamp,

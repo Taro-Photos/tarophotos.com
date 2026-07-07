@@ -115,7 +115,7 @@ export function SeriesDetail({ data }: { data: SeriesDetails }) {
             <Link className={styles.ctaLink} href="/works">
               All Works →
             </Link>
-            <Link className={styles.ctaLink} href="/#contact">
+            <Link className={styles.ctaLink} href="/contact">
               Contact →
             </Link>
           </div>

@@ -1,12 +1,9 @@
 import Link from "next/link";
-import { ContactForm } from "@/components/contact/ContactForm";
 import styles from "./SiteFooter.module.css";
-
-const CONTACT_EMAIL = "hello@tarophotos.com";
 
 export function SiteFooter() {
   return (
-    <footer className={styles.footer} id="contact">
+    <footer className={styles.footer}>
       <hr className={styles.rule} />
       <div className="ds-wrap">
         <div className={styles.inner}>
@@ -33,7 +30,15 @@ export function SiteFooter() {
             </div>
             <div className={styles.contact}>
               <div className={styles.label}>Get in touch</div>
-              <ContactForm fallbackEmail={CONTACT_EMAIL} />
+              <Link className={styles.contactCta} href="/contact">
+                Contact
+                <span className={styles.contactCtaJa} lang="ja">
+                  お問い合わせ
+                </span>
+                <span className={styles.contactArrow} aria-hidden>
+                  →
+                </span>
+              </Link>
             </div>
           </div>
           <hr className="ds-hair" />

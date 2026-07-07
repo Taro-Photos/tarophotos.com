@@ -3,7 +3,7 @@ import { primaryContactEmail } from "./contact";
 export const legalPage = {
   updatedAt: "2025-09-01",
   contactEmail: primaryContactEmail,
-  contactFormUrl: "/#contact",
+  contactFormUrl: "/contact",
 };
 
 export type PrivacyPolicySection = {

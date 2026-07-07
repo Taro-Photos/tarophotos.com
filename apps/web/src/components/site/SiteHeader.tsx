@@ -13,9 +13,10 @@ export function SiteHeader() {
             </span>
           </Link>
           <nav className={styles.nav} aria-label="Primary">
-            <a href="#series">Series</a>
-            <a href="#about">About</a>
-            <a href="#contact">Contact</a>
+            <Link href="/#series">Series</Link>
+            <Link href="/journal">Journal</Link>
+            <Link href="/#about">About</Link>
+            <Link href="/#contact">Contact</Link>
           </nav>
         </div>
       </div>

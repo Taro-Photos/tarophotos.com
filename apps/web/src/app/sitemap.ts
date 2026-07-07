@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { seriesDetails } from "./_content/series";
 import { legalPage } from "./_content/legal";
+import { journalSorted } from "./_content/journal";
 import { getSiteUrl } from "./_lib/site";
 
 const toTimestamp = (value: string | number | Date | undefined) => {
@@ -17,6 +18,11 @@ const galleryTimestamps = seriesDetails
 const latestGalleryTimestamp = galleryTimestamps.length ? Math.max(...galleryTimestamps) : undefined;
 
 const legalTimestamp = toTimestamp(`${legalPage.updatedAt}T00:00:00Z`);
+
+const journalTimestamps = journalSorted
+  .map((post) => toTimestamp(post.updatedAt ?? post.date))
+  .filter((timestamp): timestamp is number => typeof timestamp === "number");
+const latestJournalTimestamp = journalTimestamps.length ? Math.max(...journalTimestamps) : undefined;
 
 const defaultTimestamp = Math.max(
   latestGalleryTimestamp ?? 0,
@@ -50,6 +56,11 @@ const STATIC_ROUTES: Array<{
     lastModified: latestGalleryTimestamp ?? defaultTimestamp,
   },
   {
+    path: "/journal",
+    changeFrequency: "weekly",
+    lastModified: latestJournalTimestamp ?? defaultTimestamp,
+  },
+  {
     path: "/legal",
     changeFrequency: "yearly",
     lastModified: legalTimestamp,
@@ -81,5 +92,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
     };
   });
 
-  return [...staticRoutes, ...worksRoutes];
+  const journalRoutes: MetadataRoute.Sitemap = journalSorted.map((post) => ({
+    url: `${siteUrl}/journal/${post.slug}`,
+    lastModified: safeDate(post.updatedAt ?? post.date),
+    changeFrequency: "monthly",
+  }));
+
+  return [...staticRoutes, ...worksRoutes, ...journalRoutes];
 }

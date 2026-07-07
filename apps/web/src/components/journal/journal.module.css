@@ -1,0 +1,375 @@
+/* Journal（随筆・撮影ノート）。tarophotos DS 準拠:
+   Cormorant Garamond 見出し / Shippori Mincho 本文（和字主体）/ 生成り背景。 */
+
+/* ── 記事ページ ─────────────────────────────── */
+.article {
+  padding-block: clamp(40px, 7vw, 96px);
+}
+.top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: clamp(40px, 7vw, 88px);
+}
+.back {
+  font-family: var(--font-ui);
+  font-size: var(--text-ui);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--color-warm-grey);
+  transition: color 0.4s ease;
+}
+.back:hover {
+  color: var(--color-ink);
+}
+.topMeta {
+  font-family: var(--font-ui);
+  font-size: var(--text-ui-sm);
+  letter-spacing: 0.16em;
+  color: var(--color-warm-grey);
+  font-variant-numeric: tabular-nums;
+}
+
+.header {
+  max-width: 40rem;
+}
+.eyebrow {
+  display: block;
+  font-family: var(--font-ui);
+  font-size: var(--text-ui);
+  letter-spacing: var(--tracking-eyebrow, 0.34em);
+  text-transform: uppercase;
+  color: var(--color-warm-grey);
+  margin-bottom: clamp(20px, 3vw, 30px);
+}
+.title {
+  font-family: var(--font-serif);
+  font-weight: 300;
+  font-size: clamp(38px, 6vw, 68px);
+  line-height: 1.05;
+  letter-spacing: -0.005em;
+  color: var(--color-ink);
+  /* 和字主体の題は句途中で割らない（短句） */
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+.title:lang(ja) {
+  font-family: var(--font-mincho);
+  font-weight: 400;
+  font-size: clamp(30px, 5vw, 52px);
+  line-height: 1.28;
+}
+.subEn {
+  display: block;
+  margin-top: 14px;
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 300;
+  font-size: clamp(18px, 2.4vw, 26px);
+  color: var(--color-warm-grey);
+}
+
+.cover {
+  margin: clamp(36px, 6vw, 72px) 0 clamp(28px, 4vw, 52px);
+  position: relative;
+}
+.cover img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* ── 本文プリミティブ ─────────────────────────── */
+.prose {
+  max-width: 38rem;
+  margin-inline: auto;
+}
+.lead {
+  font-family: var(--font-mincho);
+  font-size: clamp(17px, 2.1vw, 21px);
+  line-height: 2;
+  color: var(--color-ink);
+  margin-bottom: clamp(28px, 4vw, 44px);
+}
+.p {
+  font-family: var(--font-mincho);
+  font-size: 16px;
+  line-height: 2;
+  color: var(--color-ink);
+  margin-bottom: 1.9em;
+}
+.p:lang(en) {
+  font-family: var(--font-serif);
+  font-size: 18px;
+  line-height: 1.7;
+}
+.h2 {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-size: var(--text-heading);
+  line-height: 1.2;
+  color: var(--color-ink);
+  margin: clamp(48px, 6vw, 72px) 0 clamp(18px, 2vw, 24px);
+}
+.h2:lang(ja) {
+  font-family: var(--font-mincho);
+  font-size: clamp(22px, 3vw, 30px);
+  word-break: keep-all;
+}
+.quote {
+  font-family: var(--font-mincho);
+  font-size: clamp(19px, 2.4vw, 24px);
+  line-height: 1.9;
+  color: var(--color-warm-grey);
+  border-left: 1px solid var(--color-hair);
+  padding-left: clamp(18px, 3vw, 30px);
+  margin: clamp(36px, 5vw, 56px) 0;
+}
+.rule {
+  border: 0;
+  border-top: 1px solid var(--color-hair);
+  width: 64px;
+  margin: clamp(48px, 6vw, 72px) auto;
+}
+
+/* 箇条書き */
+.ul {
+  margin: 0 0 1.9em;
+  padding-left: 1.5em;
+  list-style: none;
+}
+.li {
+  font-family: var(--font-mincho);
+  font-size: 16px;
+  line-height: 1.9;
+  color: var(--color-ink);
+  margin-bottom: 0.5em;
+  position: relative;
+}
+.ul > .li::before {
+  content: "—";
+  position: absolute;
+  left: -1.5em;
+  color: var(--color-warm-grey);
+}
+.ol {
+  counter-reset: ol;
+}
+.ol > .li {
+  counter-increment: ol;
+}
+.ol > .li::before {
+  content: counter(ol) ".";
+  position: absolute;
+  left: -1.6em;
+  color: var(--color-warm-grey);
+  font-variant-numeric: tabular-nums;
+}
+
+/* 本文中リンク・強調（作品へのリンク＝ .workLink 含む） */
+.p a,
+.lead a,
+.li a,
+.workLink {
+  color: var(--color-ink);
+  text-decoration: none;
+  border-bottom: 1px solid var(--color-hair);
+  transition: border-color 0.4s ease;
+}
+.p a:hover,
+.lead a:hover,
+.li a:hover,
+.workLink:hover {
+  border-bottom-color: var(--color-ink);
+}
+.p em,
+.lead em,
+.li em {
+  font-style: italic;
+}
+.p strong,
+.lead strong,
+.li strong {
+  font-weight: 600;
+}
+
+/* 本文中の写真（prose の measure より広く見せる） */
+.photo {
+  margin: clamp(40px, 6vw, 72px) 0;
+  max-width: 52rem;
+  margin-inline: auto;
+}
+.photo img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+.caption {
+  margin-top: 12px;
+  font-family: var(--font-mincho);
+  font-size: 13px;
+  line-height: 1.8;
+  color: var(--color-warm-grey);
+}
+.captionMeta {
+  display: block;
+  margin-top: 4px;
+  font-family: var(--font-ui);
+  font-size: var(--text-ui-sm);
+  letter-spacing: 0.14em;
+  color: var(--color-warm-grey);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── 前後ナビ ─────────────────────────────── */
+.nav {
+  max-width: 52rem;
+  margin: clamp(64px, 9vw, 112px) auto 0;
+  padding-top: clamp(28px, 4vw, 40px);
+  border-top: 1px solid var(--color-hair);
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+}
+.navLink {
+  display: block;
+  max-width: 46%;
+}
+.navLink.next {
+  text-align: right;
+  margin-left: auto;
+}
+.navDir {
+  display: block;
+  font-family: var(--font-ui);
+  font-size: var(--text-ui-sm);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--color-warm-grey);
+  margin-bottom: 8px;
+}
+.navTitle {
+  font-family: var(--font-mincho);
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--color-ink);
+  transition: color 0.4s ease;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+.navLink:hover .navTitle {
+  color: var(--color-warm-grey);
+}
+.allLink {
+  text-align: center;
+  margin-top: clamp(40px, 6vw, 64px);
+}
+.allLink a {
+  font-family: var(--font-ui);
+  font-size: var(--text-ui);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--color-warm-grey);
+  transition: color 0.4s ease;
+}
+.allLink a:hover {
+  color: var(--color-ink);
+}
+
+/* ── 一覧ページ ─────────────────────────────── */
+.indexWrap {
+  padding-block: clamp(48px, 8vw, 110px);
+}
+.indexHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: clamp(44px, 7vw, 80px);
+}
+.indexTitle {
+  font-family: var(--font-serif);
+  font-weight: 300;
+  font-size: clamp(40px, 6vw, 72px);
+  line-height: 1;
+  color: var(--color-ink);
+}
+.indexTitle .ja {
+  font-family: var(--font-mincho);
+  font-size: 0.4em;
+  color: var(--color-warm-grey);
+  margin-left: 0.5em;
+  letter-spacing: 0.1em;
+  word-break: keep-all;
+}
+.indexLede {
+  max-width: 32rem;
+  font-family: var(--font-mincho);
+  font-size: 15px;
+  line-height: 1.9;
+  color: var(--color-warm-grey);
+}
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(40px, 6vw, 72px);
+}
+.card {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  gap: clamp(24px, 4vw, 56px);
+  align-items: center;
+}
+.cardCover {
+  position: relative;
+  aspect-ratio: 3 / 2;
+  overflow: hidden;
+  background: var(--color-paper-deep);
+}
+.cardCover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.9s var(--ease-ds, ease);
+}
+.card:hover .cardCover img {
+  transform: scale(1.03);
+}
+.cardEyebrow {
+  font-family: var(--font-ui);
+  font-size: var(--text-ui-sm);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--color-warm-grey);
+  font-variant-numeric: tabular-nums;
+}
+.cardTitle {
+  font-family: var(--font-mincho);
+  font-weight: 400;
+  font-size: clamp(22px, 3vw, 30px);
+  line-height: 1.4;
+  color: var(--color-ink);
+  margin: 14px 0 10px;
+  transition: color 0.4s ease;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+.card:hover .cardTitle {
+  color: var(--color-warm-grey);
+}
+.cardExcerpt {
+  font-family: var(--font-mincho);
+  font-size: 14px;
+  line-height: 1.9;
+  color: var(--color-warm-grey);
+  max-width: 30rem;
+}
+
+@media (max-width: 720px) {
+  .card {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+}

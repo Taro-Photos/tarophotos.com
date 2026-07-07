@@ -1,6 +1,5 @@
 {
   "projectId": "8243c2c1-4bf4-4a35-8063-b50e6583ec15",
-  "projectName": "Tarophotos DS",
   "pkg": "@taro/design-system",
   "globalName": "TaroDS",
   "shape": "package",
@@ -10,6 +9,9 @@
   "cssEntry": ".design-sync/dist/cssentry.css",
   "extraFonts": [".design-sync/fonts-src/fonts.css"],
   "readmeHeader": ".design-sync/conventions.md",
+  "libOverrides": {
+    "dts.mjs": "allow H1-H6 through the SCREAMING_CASE component-name filter — journal prose exports <H2>"
+  },
   "overrides": {
     "Hero": { "cardMode": "column" },
     "About": { "cardMode": "column" },
@@ -18,7 +20,10 @@
     "SiteFooter": { "cardMode": "column" },
     "LegalPage": { "cardMode": "column" },
     "WorksIndex": { "cardMode": "column" },
-    "SeriesDetail": { "cardMode": "column" }
+    "SeriesDetail": { "cardMode": "column" },
+    "JournalIndex": { "cardMode": "column" },
+    "JournalArticle": { "cardMode": "column" },
+    "JournalNav": { "cardMode": "column" }
   },
   "componentSrcMap": {
     "Wrap": "apps/web/src/design-system/primitives.tsx",
@@ -36,6 +41,20 @@
     "ContactForm": "apps/web/src/components/contact/ContactForm.tsx",
     "WorksIndex": "apps/web/src/components/works/WorksIndex.tsx",
     "SeriesDetail": "apps/web/src/components/series/SeriesDetail.tsx",
-    "LegalPage": "apps/web/src/components/legal/LegalPage.tsx"
+    "LegalPage": "apps/web/src/components/legal/LegalPage.tsx",
+    "JournalIndex": "apps/web/src/components/journal/JournalIndex.tsx",
+    "JournalArticle": "apps/web/src/components/journal/JournalArticle.tsx",
+    "JournalNav": "apps/web/src/components/journal/JournalNav.tsx",
+    "P": "apps/web/src/components/journal/prose.tsx",
+    "Prose": "apps/web/src/components/journal/prose.tsx",
+    "Lead": "apps/web/src/components/journal/prose.tsx",
+    "H2": "apps/web/src/components/journal/prose.tsx",
+    "Quote": "apps/web/src/components/journal/prose.tsx",
+    "Ul": "apps/web/src/components/journal/prose.tsx",
+    "Ol": "apps/web/src/components/journal/prose.tsx",
+    "Li": "apps/web/src/components/journal/prose.tsx",
+    "WorkLink": "apps/web/src/components/journal/prose.tsx",
+    "Rule": "apps/web/src/components/journal/prose.tsx",
+    "Photo": "apps/web/src/components/journal/prose.tsx"
   }
 }

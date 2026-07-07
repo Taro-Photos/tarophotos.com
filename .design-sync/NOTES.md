@@ -6,7 +6,8 @@ The DS is **inline in the Next app** (`apps/web/src/design-system/` + `apps/web/
 
 - `cfg.pkg = "@taro/design-system"` is a **label only** (no such node_modules package). `--entry` points at the pre-built `.design-sync/dist/ds.mjs`, so `PKG_DIR` resolves to the **repo root**; `componentSrcMap` paths and `cfg.srcDir` are therefore repo-relative (`apps/web/src/...`).
 - `--node-modules ./node_modules` = **repo root** (pnpm hoists react/react-dom/@types/react there; they are NOT in `apps/web/node_modules`).
-- Global: `window.TaroDS`. 16 components in 7 groups (design-system / home / site / contact / works / series / legal).
+- Global: `window.TaroDS`. 30 components in 8 groups (design-system / home / site / contact / works / series / legal / journal)。journal は 3 セクション（Index/Article/Nav）+ prose キット 11（P/Prose/Lead/H2/Quote/Ul/Ol/Li/WorkLink/Rule/Photo）。
+- **JournalNav / JournalArticle の前後ナビ**はレジストリ（`_content/journal.ts`）から導出 — 記事が1本の間は prev/next が出ない（プレビューはそれが正）。
 
 ## Build pipeline (one command: `bash .design-sync/build-assets.sh`)
 
@@ -21,6 +22,17 @@ The DS is **inline in the Next app** (`apps/web/src/design-system/` + `apps/web/
 Then: `package-build.mjs` (bundles `ds.mjs`, copies `cssentry.css` into `_ds_bundle.css`, ships fonts) → `package-validate.mjs`.
 
 ## Gotchas (each cost a debug cycle)
+
+- **`resync.mjs` は `cfg.buildCmd` を実行しない** — 再同期の前に必ず手動で
+  `bash .design-sync/build-assets.sh` を先に走らせる（怠ると stale `ds.mjs` を
+  package-build が再ラップし、新規コンポーネントが全て "Element type is invalid"
+  になる。2026-07 の journal 追加時に再発）。
+- **`overrides/dts.mjs` フォーク**: stock の `isComponentName` は `H2` を
+  SCREAMING_CASE 定数と誤判定して除外する。フォークで `H1-H6` を許可。
+  ⚠️ フォークの追加・削除・編集は**全コンポーネントのグレード契約を動かす**
+  （1回だけ全 30 個の re-verify が走る — 想定内の挙動）。
+- **config.json に `projectName` キーは存在しない** — validateConfig が拒否。
+  ID は `projectId` のみ記録する。
 
 - **`process.env.NEXT_PUBLIC_PRIMARY_CONTACT_EMAIL`** in `_content/contact.ts` crashes the IIFE (`process is not defined`) and kills `window.TaroDS`. `build-ds.mjs` `define`s it + `process.env → {}`. Any new `process.env.*` at module scope needs the same.
 - **Shim edits fail silently**: `build-assets.sh` has `set -e`; if `build-ds.mjs` throws (e.g. a duplicate `const` name colliding with a stripped next/image prop like `placeholder`), the script aborts and `package-build` reuses a **stale `ds.mjs`**. Always confirm `build-ds` printed its outputs before trusting a rebuild.

@@ -16,3 +16,21 @@ export { ContactForm } from "@/components/contact/ContactForm";
 export { WorksIndex } from "@/components/works/WorksIndex";
 export { SeriesDetail } from "@/components/series/SeriesDetail";
 export { LegalPage } from "@/components/legal/LegalPage";
+
+// ── Journal（/journal — file-based ブログ）─────────────────────────────
+export {
+  JournalIndex,
+  JournalArticle,
+  JournalNav,
+  P,
+  Prose,
+  Lead,
+  H2,
+  Quote,
+  Ul,
+  Ol,
+  Li,
+  WorkLink,
+  Rule,
+  Photo,
+} from "@/components/journal";

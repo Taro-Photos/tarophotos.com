@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { SESClient, SendEmailCommand } from "@aws-sdk/client-ses";
 
 import type { FormField } from "@/app/_content/booking";
+import { checkSpam } from "@/app/api/_lib/spam-guard";
 
 type FieldValue = string | string[];
 type FieldMap = Record<string, FieldValue>;
@@ -322,6 +323,22 @@ export async function processFormSubmission(
     {
       void error; // Acknowledge the error for linting if we're not using it
       return Response.json({ message: "Invalid JSON body" }, { status: 400 });
+    }
+
+    // スパム判定（honeypot / 時間ゲート / レート制限）。
+    // silent 判定は 200 を返して破棄し、bot にフィルタの存在を教えない。
+    const spamVerdict = checkSpam(request, body);
+    if (!spamVerdict.ok)
+    {
+      console.warn(`[forms:${options.formKey}] submission dropped: ${spamVerdict.reason}`);
+      if (spamVerdict.silent)
+      {
+        return Response.json({ message: options.successMessage });
+      }
+      return Response.json(
+        { message: "Too many requests. Please try again later." },
+        { status: 429 },
+      );
     }
 
     const fieldsCandidate = body.fields || {};

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { contactFields, privacyNotice } from "@/app/_content/booking";
 import styles from "./ContactForm.module.css";
 
@@ -8,9 +8,14 @@ type Status = "idle" | "submitting" | "success" | "error";
 
 const AGREE_VALUE = "同意する";
 
+// スパム対策（api/_lib/spam-guard.ts と対）: 画面外 honeypot のフィールド名と、
+// マウント→送信の経過時間。fields には混ぜずトップレベルで送る（通知メール除外）。
+const HONEYPOT_FIELD = "website";
+
 export function ContactForm({ fallbackEmail }: { fallbackEmail: string }) {
   const [status, setStatus] = useState<Status>("idle");
   const [error, setError] = useState<string | null>(null);
+  const mountedAtRef = useRef<number>(Date.now());
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -35,7 +40,11 @@ export function ContactForm({ fallbackEmail }: { fallbackEmail: string }) {
       const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ fields }),
+        body: JSON.stringify({
+          fields,
+          [HONEYPOT_FIELD]: String(data.get(HONEYPOT_FIELD) ?? ""),
+          elapsedMs: Date.now() - mountedAtRef.current,
+        }),
       });
 
       if (!res.ok) {
@@ -64,6 +73,17 @@ export function ContactForm({ fallbackEmail }: { fallbackEmail: string }) {
 
   return (
     <form className={styles.form} onSubmit={handleSubmit} noValidate={false}>
+      {/* Honeypot: 画面外に置く。人間には見えず bot だけが埋める */}
+      <div
+        aria-hidden="true"
+        style={{ position: "absolute", left: "-9999px", width: 1, height: 1, overflow: "hidden" }}
+      >
+        <label>
+          Website
+          <input type="text" name={HONEYPOT_FIELD} tabIndex={-1} autoComplete="off" />
+        </label>
+      </div>
+
       {contactFields.map((field) => {
         if (field.type === "select") {
           return (

@@ -1,4 +1,3 @@
-import { unusedSeriesDetails } from "./series-unused";
 
 export type WorkTag =
   | "urban"
@@ -2866,7 +2865,7 @@ const baseSeriesDetails: SeriesDetails[] = [
   },
 ];
 
-export const seriesDetails: SeriesDetails[] = [...baseSeriesDetails, ...unusedSeriesDetails];
+export const seriesDetails: SeriesDetails[] = baseSeriesDetails;
 
 export function getSeriesBySlug(slug: string) {
   return seriesDetails.find((series) => series.slug === slug);

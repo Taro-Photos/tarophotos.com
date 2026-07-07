@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import { Eyebrow, Exif, Hairline, Ja, Num, Wrap } from "@/design-system";
 
 export const metadata: Metadata = {
@@ -24,6 +25,11 @@ const TYPE = [
 ];
 
 export default function DesignSystemPage() {
+  // 内部確認用ショーケース。noindex に加えて本番では 404（開発時のみ閲覧可）。
+  if (process.env.NODE_ENV === "production") {
+    notFound();
+  }
+
   return (
     <main className="bg-paper text-ink">
       <Wrap className="py-24">

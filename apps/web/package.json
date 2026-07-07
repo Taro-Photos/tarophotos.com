@@ -20,7 +20,6 @@
     "zod": "^4.2.1"
   },
   "devDependencies": {
-    "@playwright/test": "^1.55.1",
     "@repo/eslint-config": "workspace:*",
     "@repo/tsconfig": "workspace:*",
     "@tailwindcss/postcss": "^4.1.18",

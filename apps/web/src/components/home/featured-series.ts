@@ -2,9 +2,8 @@
    Home — Featured Series（番号付き Series インデックスのデータ）
    出典: synth-revised の 6 works。実写真（public/series-gallery）を配線。
 
-   ⚠️ コピー（title/titleJa/place/exif）は synth 由来の **仮置き**。
-   世界観の核（出会う/背景/余白/閾）に沿わせてあるが、CEO の実作品の
-   事実（実際の撮影地・時刻・EXIF・タイトル）に後で差し替える。
+   撮影地・時刻・EXIF は元 JPG の実データに更新済み（139f99f / aeea19e で
+   CEO 確定）。title / titleJa の詩的コピーのみ CEO 最終確認待ち。
    ============================================================ */
 
 export type FeaturedWork = {

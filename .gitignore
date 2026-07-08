@@ -46,3 +46,7 @@ coverage/
 .design-sync/learnings/
 .design-sync/fonts-src/
 .design-sync/node_modules
+
+# Playwright
+playwright-report/
+test-results/

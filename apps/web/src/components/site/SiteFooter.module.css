@@ -132,6 +132,3 @@
   }
 }
 
-/* JA line-break（review 2026-07-03）: 氏名/CTA 短句。 */
-.markJa { word-break: keep-all; overflow-wrap: anywhere; }
-.ledeJa { word-break: keep-all; overflow-wrap: anywhere; }

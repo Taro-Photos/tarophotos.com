@@ -112,9 +112,3 @@
   }
 }
 
-/* JA line-break（review 2026-07-03）: 短句/ラベルのみ keep-all。
-   .body .ja は短句(L29)と長文(L36)が共有するため、短句側は TSX で .jaShort を併記し
-   .body .jaShort にのみ適用（長文 .body .ja は line-break:strict のみ＝通常折返し）。 */
-.lede .ja { word-break: keep-all; overflow-wrap: anywhere; }
-.v .ja { word-break: keep-all; overflow-wrap: anywhere; }
-.body .jaShort { word-break: keep-all; overflow-wrap: anywhere; }

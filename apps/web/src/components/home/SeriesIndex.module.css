@@ -230,9 +230,4 @@
   }
 }
 
-/* JA line-break（review 2026-07-03）: 短句サブタイトル/縦組み/2字ラベル/地名スタンプ。
-   .placeJa（caption 本文＝長文）は除外し通常折返しのまま。 */
-.h3ja { word-break: keep-all; overflow-wrap: anywhere; }
 .tateMain, .tate small { word-break: keep-all; }
-.head h2 .ja { word-break: keep-all; overflow-wrap: anywhere; }
-.stamp { word-break: keep-all; overflow-wrap: anywhere; }

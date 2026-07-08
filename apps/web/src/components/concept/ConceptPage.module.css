@@ -40,8 +40,6 @@
   color: var(--color-warm-grey);
   letter-spacing: 0.12em;
   margin-top: clamp(20px, 3vw, 30px);
-  word-break: keep-all;
-  overflow-wrap: anywhere;
 }
 
 .body {
@@ -75,8 +73,6 @@
   line-height: 2;
   color: var(--color-warm-grey);
   margin-top: 18px;
-  word-break: keep-all;
-  overflow-wrap: anywhere;
 }
 
 .rule {

@@ -19,6 +19,10 @@ export default defineConfig({
   },
   projects: [
     { name: "mobile", use: { ...devices["Pixel 5"] } },
+    // iOS Safari(WebKit) は CJK 折り返しが Chromium と異なり、行頭禁則の崩れが
+    // WebKit だけで再現することがある（About の句点孤立がこれ）。JA タイポの回帰は
+    // WebKit でも検証する。
+    { name: "mobile-webkit", use: { ...devices["iPhone 13"] } },
     { name: "desktop", use: { ...devices["Desktop Chrome"], viewport: { width: 1280, height: 900 } } },
   ],
   webServer: {

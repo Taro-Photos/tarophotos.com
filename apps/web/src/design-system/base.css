@@ -85,18 +85,17 @@
     font-variant-numeric: tabular-nums;
   }
 
-  /* 全 JA テキストに禁則（kinsoku）。長文本文はここで通常 CJK 折返し + 禁則が効く
-     （keep-all は付けない＝1 行に詰めて溢れるのを防ぐ）。短句は各所で keep-all を上書き。 */
+  /* 全 JA テキストにネイティブ禁則（kinsoku）。line-break: strict だけで、行頭に
+     句読点・閉じ括弧・拗促音が来ない正しい CJK 折返しになる。
+     ⚠️ word-break: keep-all + overflow-wrap: anywhere は使わない — 禁則を無効化し
+     「。」を行頭に孤立させる（2026-07-08）。1 行固定が要る短句のみ white-space: nowrap。 */
   [lang="ja"] {
     line-break: strict;
   }
 
-  /* 和字アクセント（明朝）。Ja/Bi primitive は設計上 短句/ラベル専用なので
-     keep-all で句途中折返し（「迎」等の孤立）を防ぐ。入り切らない時のみ緊急改行。 */
+  /* 和字アクセント（明朝）。折返しはネイティブ禁則に任せる。 */
   .ds-ja {
     font-family: var(--font-mincho);
     font-weight: 400;
-    word-break: keep-all;
-    overflow-wrap: anywhere;
   }
 }

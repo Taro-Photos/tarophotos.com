@@ -21,6 +21,20 @@ The DS is **inline in the Next app** (`apps/web/src/design-system/` + `apps/web/
 
 Then: `package-build.mjs` (bundles `ds.mjs`, copies `cssentry.css` into `_ds_bundle.css`, ships fonts) → `package-validate.mjs`.
 
+## エージェントのチェック機構の見直し（2026-07-08）
+
+**問題**: DS の render-check は各コンポーネントを**単一のデスクトップ幅・分離レンダー**でキャプチャし、エージェント（私）はそのスクショを見て "good" とグレードしていた。この構造では次を原理的に検出できない:
+- モバイル幅固有のレイアウト崩れ（縦書きの段組み折返し → #35）
+- **幅依存**の日本語行頭禁則違反（「。」の孤立 → 2026-07-08）。特定幅バンドでのみ発生
+- **WebKit 固有**のレンダリング差（About の句点孤立は Chromium では再現せず iOS Safari のみ）
+
+連続 2 件の見逃しが、「デスクトップ単一幅でのエージェント目視グレードは日本語レスポンシブ・タイポの正しさを保証できない」ことを示した。
+
+**対策 = 正しさの権限をエージェント目視から自動ハーネスへ移す**:
+- レスポンシブ／JA タイポの正しさは `apps/web` の **e2e（Chromium mobile/desktop + WebKit、幅スイープ、行頭禁則 + 横溢れ）** と **静的ガード（vitest: 縦書き×固定高さ、keep-all+anywhere の禁止）** で機械検証する。
+- エージェントのグレードは「オンブランドの美的判断」に限定し、タイポの正しさは機械が担保する。
+- DS 側で新規 UI を組む際は `conventions.md` の "Japanese line-breaking (kinsoku)" に従う（keep-all+anywhere 禁止・縦書きを固定高さに載せない）。
+
 ## Gotchas (each cost a debug cycle)
 
 - **`resync.mjs` は `cfg.buildCmd` を実行しない** — 再同期の前に必ず手動で

@@ -252,8 +252,8 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Install Playwright browser (chromium)
-        run: pnpm --filter @repo/web exec playwright install --with-deps chromium
+      - name: Install Playwright browsers (chromium + webkit)
+        run: pnpm --filter @repo/web exec playwright install --with-deps chromium webkit
 
       - name: Run responsive e2e (builds + serves internally)
         run: pnpm --filter @repo/web exec playwright test

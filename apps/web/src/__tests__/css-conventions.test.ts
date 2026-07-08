@@ -58,4 +58,31 @@ describe("CSS conventions — vertical writing must not depend on a fixed height
         offenders.map((o) => `  - ${o}`).join("\n"),
     ).toEqual([]);
   });
+
+  // `word-break: keep-all` + `overflow-wrap: anywhere` の併用は、日本語の
+  // ブラウザ標準禁則を無効化し、句読点終わりの文で「。」を行頭に孤立させる
+  // （2026-07-08 About/Contact の句点孤立）。JA は line-break: strict のネイティブ
+  // 禁則に任せ、1 行固定が必要な短句だけ white-space: nowrap を使う。
+  it("no rule combines word-break: keep-all with overflow-wrap: anywhere (breaks JA kinsoku)", async () => {
+    const files = await glob("**/*.module.css", { cwd: srcRoot, absolute: true });
+    const offenders: string[] = [];
+
+    for (const file of files) {
+      const css = readFileSync(file, "utf8");
+      for (const { selector, body } of parseRules(css)) {
+        const keepAll = /word-break\s*:\s*keep-all/i.test(body);
+        const anywhere = /overflow-wrap\s*:\s*anywhere/i.test(body);
+        if (keepAll && anywhere) {
+          offenders.push(`${relative(srcRoot, file)} { ${selector} }`);
+        }
+      }
+    }
+
+    expect(
+      offenders,
+      `keep-all + overflow-wrap:anywhere の併用は禁則を壊します。` +
+        `折返す JA は指定を外して line-break:strict に任せ、1 行固定の短句のみ ` +
+        `white-space: nowrap を使ってください:\n` + offenders.map((o) => `  - ${o}`).join("\n"),
+    ).toEqual([]);
+  });
 });

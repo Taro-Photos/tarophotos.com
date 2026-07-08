@@ -31,6 +31,10 @@ The composed sections (`Hero` `About` `SeriesIndex` `WorksIndex` `SeriesDetail` 
 
 English leads; Japanese is a quiet accent set in `font-mincho` with `lang="ja"` — use `<Ja>` / `<Bi>` or the `font-mincho` utility. **Never set Japanese in the serif.**
 
+## Japanese line-breaking (kinsoku)
+
+Japanese wraps with the browser's native kinsoku — `[lang="ja"]` already sets `line-break: strict`, so a line never starts with `。、）」` or small kana. **Do not add `word-break: keep-all` together with `overflow-wrap: anywhere`** to Japanese text: that combo defeats kinsoku and orphans the closing `。` onto its own line at some widths (worse on iOS Safari/WebKit). Let JA text wrap natively; only add `white-space: nowrap` to a short label that must stay on one line. Never gate vertical text (`writing-mode: vertical-*`) on a fixed `height` — it wraps into extra columns on mobile.
+
 ## Where the truth lives
 
 Read `styles.css` and its imports (tokens, utilities, `.ds-*`) before styling; read each component's `<Name>.d.ts` (props) and `<Name>.prompt.md` (usage).

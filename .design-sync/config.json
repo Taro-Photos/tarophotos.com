@@ -23,7 +23,9 @@
     "SeriesDetail": { "cardMode": "column" },
     "JournalIndex": { "cardMode": "column" },
     "JournalArticle": { "cardMode": "column" },
-    "JournalNav": { "cardMode": "column" }
+    "JournalNav": { "cardMode": "column" },
+    "ConceptPage": { "cardMode": "column" },
+    "ContactPage": { "cardMode": "column" }
   },
   "componentSrcMap": {
     "Wrap": "apps/web/src/design-system/primitives.tsx",
@@ -55,6 +57,8 @@
     "Li": "apps/web/src/components/journal/prose.tsx",
     "WorkLink": "apps/web/src/components/journal/prose.tsx",
     "Rule": "apps/web/src/components/journal/prose.tsx",
-    "Photo": "apps/web/src/components/journal/prose.tsx"
+    "Photo": "apps/web/src/components/journal/prose.tsx",
+    "ConceptPage": "apps/web/src/components/concept/ConceptPage.tsx",
+    "ContactPage": "apps/web/src/components/contact/ContactPage.tsx"
   }
 }

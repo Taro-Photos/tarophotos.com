@@ -16,6 +16,8 @@ export { ContactForm } from "@/components/contact/ContactForm";
 export { WorksIndex } from "@/components/works/WorksIndex";
 export { SeriesDetail } from "@/components/series/SeriesDetail";
 export { LegalPage } from "@/components/legal/LegalPage";
+export { ConceptPage } from "@/components/concept/ConceptPage";
+export { ContactPage } from "@/components/contact/ContactPage";
 
 // ── Journal（/journal — file-based ブログ）─────────────────────────────
 export {

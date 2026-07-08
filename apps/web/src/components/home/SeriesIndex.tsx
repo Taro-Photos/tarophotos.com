@@ -52,8 +52,8 @@ function Pause() {
       <div />
       <div className={styles.pauseBody}>
         <div className={styles.tate} lang="ja">
-          余白に、想いが宿る
-          <small>{'　'}観る人のための場所</small>
+          <span className={styles.tateMain}>余白に、想いが宿る</span>
+          <small>観る人のための場所</small>
         </div>
         <div className={styles.pauseText}>
           <p lang="en">

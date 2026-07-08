@@ -26,7 +26,7 @@ export function About() {
               <p className={styles.body}>
                 Based in Tokyo, I work mostly at the threshold — dawn, afterglow,
                 the band where one thing becomes another. The encounter happens
-                there. <span className={`${styles.ja} ${styles.jaShort}`} lang="ja">出会いは、いつも閾（しきい）で起きる。</span>
+                there. <span className={`${styles.ja} ${styles.jaShort}`} lang="ja">出会いは、いつも境目で起きる。</span>
               </p>
               <p className={styles.body}>
                 What I want to show is not the surface but the <em>background</em>{" "}

@@ -51,7 +51,7 @@ export function JournalIndex() {
             </span>
           </h1>
           <p className={styles.indexLede} lang="ja">
-            撮ることの前後にある、待つ時間のこと。風景と、閾と、余白をめぐるノート。
+            撮ることの前後にある、待つ時間のこと。風景と、境目と、余白をめぐるノート。
           </p>
         </div>
         <div className={styles.list}>

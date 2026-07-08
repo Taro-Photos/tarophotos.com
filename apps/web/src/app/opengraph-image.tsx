@@ -85,7 +85,7 @@ export default function OpengraphImage() {
         >
           <span>tarophotos.com</span>
           <span style={{ fontWeight: 300, letterSpacing: "0.04em" }}>
-            landscape, at the threshold
+            Time passes. One frame stays.
           </span>
         </div>
       </div>

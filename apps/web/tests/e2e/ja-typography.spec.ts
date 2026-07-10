@@ -29,15 +29,17 @@ WIDTHS.push(600, 768);
 const FORBIDDEN_LEADING =
   "、。，．・：；！？)]｝）〕】》」』〉‐ー～ぁぃぅぇぉっゃゅょゎァィゥェォッャュョヮ";
 
-test("JA line-head kinsoku across routes and widths", async ({ page }) => {
-  const all: string[] = [];
-
-  for (const route of ROUTES) {
+// ルート単位に 1 テスト（各テストが独自の timeout 予算を持ち、worker 間で並列化。
+// 全ルート×全幅を 1 テストに詰めると CI の WebKit で 30s を超えるため分割する）。
+for (const route of ROUTES) {
+  test(`JA line-head kinsoku — ${route}`, async ({ page }) => {
+    const all: string[] = [];
     await page.goto(route, { waitUntil: "networkidle" });
+    // フォントは幅で変わらないのでルート毎に一度だけ待つ。
+    await page.evaluate(() => document.fonts.ready);
 
     for (const width of WIDTHS) {
       await page.setViewportSize({ width, height: 900 });
-      await page.evaluate(() => document.fonts.ready);
       const violations = await page.evaluate((forbidden) => {
         const isJa = (s: string) => /[぀-ヿ㐀-鿿]/.test(s);
         const out: { line: string; first: string; where: string }[] = [];
@@ -85,12 +87,12 @@ test("JA line-head kinsoku across routes and widths", async ({ page }) => {
         all.push(`${route} @${width}px [${v.where}] 行頭"${v.first}" 行:"${v.line}"`);
       }
     }
-  }
 
-  expect(
-    Array.from(new Set(all)),
-    `日本語の行頭禁則違反（行頭に句読点等）:\n${Array.from(new Set(all))
-      .map((s) => `  - ${s}`)
-      .join("\n")}`,
-  ).toEqual([]);
-});
+    expect(
+      Array.from(new Set(all)),
+      `日本語の行頭禁則違反（行頭に句読点等）:\n${Array.from(new Set(all))
+        .map((s) => `  - ${s}`)
+        .join("\n")}`,
+    ).toEqual([]);
+  });
+}

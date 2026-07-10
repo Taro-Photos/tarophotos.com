@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 import { seriesDetails } from "./_content/series";
 import { legalPage } from "./_content/legal";
-import { journalSorted } from "./_content/journal";
+import { journalSorted, journalPagePosts } from "./_content/journal";
 import { getSiteUrl } from "./_lib/site";
 
 const toTimestamp = (value: string | number | Date | undefined) => {
@@ -107,7 +107,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     };
   });
 
-  const journalRoutes: MetadataRoute.Sitemap = journalSorted.map((post) => ({
+  const journalRoutes: MetadataRoute.Sitemap = journalPagePosts.map((post) => ({
     url: `${siteUrl}/journal/${post.slug}`,
     lastModified: safeDate(post.updatedAt ?? post.date),
     changeFrequency: "monthly",

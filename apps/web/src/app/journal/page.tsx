@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { JournalIndex } from "@/components/journal";
 import { JsonLd } from "../_components/JsonLd";
-import { journalSorted } from "../_content/journal";
+import { journalEssays, journalPagePosts } from "../_content/journal";
 import { getSiteUrl } from "../_lib/site";
 
 const siteUrl = getSiteUrl();
@@ -14,7 +14,7 @@ const fallbackOgImage = {
   height: 630,
   alt: "Taro Shirai — Journal",
 };
-const primaryOgImage = journalSorted[0]?.cover ?? fallbackOgImage;
+const primaryOgImage = journalEssays[0]?.cover ?? fallbackOgImage;
 
 const blogStructuredData = {
   "@context": "https://schema.org",
@@ -23,7 +23,7 @@ const blogStructuredData = {
   description,
   url: `${siteUrl}/journal`,
   inLanguage: "ja",
-  blogPost: journalSorted.map((post) => ({
+  blogPost: journalPagePosts.map((post) => ({
     "@type": "BlogPosting",
     headline: post.title,
     url: `${siteUrl}/journal/${post.slug}`,

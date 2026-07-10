@@ -11,6 +11,7 @@ export {
   Ol,
   Li,
   WorkLink,
+  A,
   Rule,
   Photo,
 } from "./prose";

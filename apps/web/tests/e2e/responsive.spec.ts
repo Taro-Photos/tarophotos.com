@@ -2,17 +2,7 @@ import { test, expect } from "@playwright/test";
 
 // 主要ルートを実描画し、応答レイアウトの健全性を検証する。
 // mobile / desktop の両プロジェクトで各ルートを回す（playwright.config の projects）。
-const ROUTES = [
-  "/",
-  "/about",
-  "/contact",
-  "/concept",
-  "/journal",
-  "/journal/waiting-for-first-light",
-  "/works",
-  "/works/first-light-voyage",
-  "/legal",
-];
+import { ROUTES } from "./routes";
 
 for (const route of ROUTES) {
   test(`no horizontal overflow: ${route}`, async ({ page }) => {

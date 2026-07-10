@@ -69,16 +69,21 @@ export const journalIndex: JournalMeta[] = [
       height: 1707,
     },
   },
-  // お知らせの例（リンクだけの一報）。href を付けているので page.tsx は不要。
-  // CEO 確定情報（個展・プリント等）に差し替え／追加してください。
   {
-    slug: "works-series-published",
+    slug: "website-renewal",
     kind: "news",
-    title: "Works に撮影シリーズを公開しています",
-    date: "2026-06-01",
-    excerpt: "作品ページ（Works）で、風景シリーズを順次公開しています。",
-    href: "/works",
-    tags: ["news"],
+    title: "Webサイトを、刷新しました",
+    titleEn: "A New Website",
+    date: "2026-07-10",
+    excerpt:
+      "コンセプトの言葉から、デザイン、日本語の組版、実装まで、サイト全体を作り直しました。設計・開発は、代表を務める i-Willink の仕事です。写真と同じ姿勢で作っています。",
+    tags: ["news", "website", "i-willink"],
+    cover: {
+      src: "/series-gallery/first-light-voyage/first-light-voyage-03.webp",
+      alt: "富士山頂に太陽が重なるダイヤモンド富士 — 新しいサイトの象徴として",
+      width: 2560,
+      height: 1707,
+    },
   },
 ];
 

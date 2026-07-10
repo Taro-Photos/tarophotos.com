@@ -8,17 +8,7 @@ import { test, expect } from "@playwright/test";
 //    単一幅では取りこぼすため、複数の代表幅をスイープする。
 //  - 縦書き（writing-mode: vertical-*）は行の概念が異なるため除外（別ガードが担当）。
 //  - DS の render-check（デスクトップ・分離コンポーネント）では届かない層。
-const ROUTES = [
-  "/",
-  "/about",
-  "/contact",
-  "/concept",
-  "/journal",
-  "/journal/waiting-for-first-light",
-  "/works",
-  "/works/first-light-voyage",
-  "/legal",
-];
+import { ROUTES } from "./routes";
 
 // orphan は狭い幅バンドでのみ起きるため、mobile〜小型タブレットを細かく刻む。
 const WIDTHS: number[] = [];

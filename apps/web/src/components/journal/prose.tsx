@@ -132,6 +132,23 @@ export function WorkLink({
   );
 }
 
+/** 本文中の汎用リンク。内部（"/concept" 等）と外部（"https://…"）の両対応。
+ *  外部は新しいタブで開く。見た目は WorkLink と同じ。 */
+export function A({ href, children }: { href: string; children: ReactNode }) {
+  if (/^https?:\/\//.test(href)) {
+    return (
+      <a className={styles.workLink} href={href} target="_blank" rel="noreferrer">
+        {children}
+      </a>
+    );
+  }
+  return (
+    <Link className={styles.workLink} href={href}>
+      {children}
+    </Link>
+  );
+}
+
 /** 節の区切り（短い罫）。 */
 export function Rule() {
   return <hr className={styles.rule} />;

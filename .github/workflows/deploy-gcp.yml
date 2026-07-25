@@ -1,0 +1,97 @@
+name: Deploy to GCP (Cloud Run + Firebase Hosting)
+
+# P2 移行（tarophotos.com → Cloud Run + Firebase Hosting rewrite・willink-infra 管理の
+# iwillink-web プロジェクト）。Amplify 併走期間中は ci.yml の deploy-app と両輪で走る。
+# DNS 切替（tarophotos.com → Firebase）と Amplify 廃止は移行計画 §5 のカットオーバー手順で別途実施。
+#
+# Auth: GitHub Actions OIDC -> GCP Workload Identity Federation（鍵レス）
+#   SA: tarophotos-deployer@iwillink-web.iam.gserviceaccount.com
+#       (artifactregistry.writer / run.admin / firebasehosting.admin / runtime actAs)
+# 実行時 env（SES federation 等）は Cloud Run service 側に保持され deploy を跨いで引き継がれる。
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "apps/web/**"
+      - "packages/**"
+      - "Dockerfile"
+      - "firebase.json"
+      - ".github/workflows/deploy-gcp.yml"
+      - "pnpm-lock.yaml"
+  workflow_dispatch:
+
+concurrency:
+  group: gcp-deploy-main
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  PROJECT: iwillink-web
+  REGION: asia-northeast1
+  SERVICE: tarophotos
+  IMAGE: asia-northeast1-docker.pkg.dev/iwillink-web/web/tarophotos
+
+jobs:
+  build-and-deploy:
+    name: Build + Cloud Run + Hosting deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Authenticate to GCP (WIF)
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: projects/626363975800/locations/global/workloadIdentityPools/github/providers/github-oidc
+          service_account: tarophotos-deployer@iwillink-web.iam.gserviceaccount.com
+
+      - name: Setup gcloud
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure docker auth
+        run: gcloud auth configure-docker asia-northeast1-docker.pkg.dev --quiet
+
+      - name: Build image
+        run: docker build -t "$IMAGE:${{ github.sha }}" .
+
+      - name: Push image
+        run: docker push "$IMAGE:${{ github.sha }}"
+
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy "$SERVICE" \
+            --project="$PROJECT" \
+            --region="$REGION" \
+            --image="$IMAGE:${{ github.sha }}" \
+            --service-account="tarophotos-runtime@iwillink-web.iam.gserviceaccount.com" \
+            --allow-unauthenticated \
+            --port=8080 \
+            --memory=512Mi \
+            --cpu=1 \
+            --min-instances=0 \
+            --max-instances=2 \
+            --quiet
+
+      - name: Verify Cloud Run revision serves (live)
+        run: |
+          URL=$(gcloud run services describe "$SERVICE" --project="$PROJECT" --region="$REGION" --format='value(status.url)')
+          CODE=$(curl -o /dev/null -s -w "%{http_code}" "$URL/")
+          echo "$SERVICE: HTTP $CODE at $URL"
+          test "$CODE" = "200"
+          curl -s "$URL/" | grep -q 'ds-wrap'
+          echo "content check passed"
+
+      - name: Deploy Firebase Hosting (rewrite config)
+        run: npx firebase-tools@14 deploy --only hosting:tarophotos-web --project iwillink-web --non-interactive
+
+      - name: Verify Hosting front (live)
+        run: |
+          CODE=$(curl -o /dev/null -s -w "%{http_code}" "https://tarophotos-web.web.app/?cb=${{ github.sha }}")
+          echo "tarophotos-web.web.app: HTTP $CODE"
+          test "$CODE" = "200"
+          curl -s "https://tarophotos-web.web.app/?cb=${{ github.sha }}" | grep -q 'ds-wrap'
+          echo "content check passed"

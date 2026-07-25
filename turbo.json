@@ -3,6 +3,7 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
+      "env": ["GCP_BUILD"],
       "outputs": [".next/**", "!.next/cache/**", "dist/**", "cdk.out/**"]
     },
     "dev": {

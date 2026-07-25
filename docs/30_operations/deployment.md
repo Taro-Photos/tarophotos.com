@@ -3,7 +3,11 @@
 [日本語 (Japanese)](deployment.ja.md)
 
 > **Last Updated**: 2025-12-16
-> **Status**: Approved
+> **Status**: ⚠️ **Out of sync with production (as of 2026-07-25)**
+>
+> **Production now runs on Google Cloud Run + Firebase Hosting, not AWS Amplify** (cut over 2026-07-25). The Amplify / CDK / Secrets Manager steps below describe the **legacy path kept only for rollback** and are not the normal deployment route. Current deploys go through `.github/workflows/deploy-gcp.yml`. See [docs/HANDOFF.md](../HANDOFF.md).
+>
+> This document will be rewritten when the Amplify app is deleted (planned 2026-08-08).
 
 ## Overview
 

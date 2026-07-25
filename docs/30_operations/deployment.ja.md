@@ -3,7 +3,11 @@
 [English](deployment.md)
 
 > **最終更新**: 2025-12-16  
-> **ステータス**: Approved
+> **ステータス**: ⚠️ **本番の実態と乖離あり（2026-07-25 時点）**
+>
+> **本番は AWS Amplify ではなく Google Cloud Run + Firebase Hosting で稼働している**（2026-07-25 切替済み）。本書の Amplify / CDK / Secrets Manager の手順は**ロールバック用に残している旧経路**の説明であり、通常のデプロイには使わない。現行のデプロイは `.github/workflows/deploy-gcp.yml`。→ [docs/HANDOFF.md](../HANDOFF.md)
+>
+> 本書の全面改訂は Amplify app 削除（2026-08-08 予定）と同時に行う。
 
 ## 概要
 

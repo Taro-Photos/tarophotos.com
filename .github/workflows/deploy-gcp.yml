@@ -62,7 +62,10 @@ jobs:
         run: docker push "$IMAGE:${{ github.sha }}"
 
       - name: Deploy to Cloud Run
+        # 実行時 env の SSOT = repository variables（public repo のため値は直書きしない）。
+        # SES federation（SES_AWS_ROLE_ARN）で送信は鍵レス — 静的キーは使わない。
         run: |
+          test -n "${{ vars.SES_AWS_ROLE_ARN }}" || { echo "::error::repository variable SES_AWS_ROLE_ARN is unset"; exit 1; }
           gcloud run deploy "$SERVICE" \
             --project="$PROJECT" \
             --region="$REGION" \
@@ -74,6 +77,7 @@ jobs:
             --cpu=1 \
             --min-instances=0 \
             --max-instances=2 \
+            --update-env-vars="SES_REGION=${{ vars.SES_REGION }},SES_FROM_EMAIL=${{ vars.SES_FROM_EMAIL }},SES_TO_EMAIL=${{ vars.SES_TO_EMAIL }},SES_AWS_ROLE_ARN=${{ vars.SES_AWS_ROLE_ARN }}" \
             --quiet
 
       - name: Verify Cloud Run revision serves (live)

@@ -1,5 +1,6 @@
 import { NextRequest } from "next/server";
-import { SESClient, SendEmailCommand } from "@aws-sdk/client-ses";
+import { SESClient, SendEmailCommand, type SESClientConfig } from "@aws-sdk/client-ses";
+import { fromWebToken } from "@aws-sdk/credential-providers";
 
 import type { FormField } from "@/app/_content/booking";
 import { checkSpam } from "@/app/api/_lib/spam-guard";
@@ -66,14 +67,51 @@ function getSesConfig()
 
 let sesClient: SESClient | null = null;
 
+// Cloud Run（GCP）から SES を鍵レスで叩く経路。runtime SA の Google 署名 OIDC token を
+// metadata server から取得し、AWS 側の federation role へ AssumeRoleWithWebIdentity する。
+// 静的 IAM キー（SES_AWS_ACCESS_KEY_ID/SECRET）は Amplify 併走期間の後方互換として残す。
+const GCP_METADATA_IDENTITY_URL =
+  "http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/identity";
+const AWS_FEDERATION_AUDIENCE = "sts.amazonaws.com";
+
+async function fetchGcpIdentityToken(audience: string): Promise<string>
+{
+  const res = await fetch(`${GCP_METADATA_IDENTITY_URL}?audience=${encodeURIComponent(audience)}`, {
+    headers: { "Metadata-Flavor": "Google" },
+  });
+  if (!res.ok)
+  {
+    throw new Error(`GCP metadata identity token fetch failed: ${res.status}`);
+  }
+  return res.text();
+}
+
+function webIdentityCredentials(roleArn: string): NonNullable<SESClientConfig["credentials"]>
+{
+  return async () =>
+  {
+    const token = await fetchGcpIdentityToken(AWS_FEDERATION_AUDIENCE);
+    return fromWebToken({
+      roleArn,
+      roleSessionName: "tarophotos-contact-form",
+      webIdentityToken: token,
+    })();
+  };
+}
+
 function getSesClient(): SESClient
 {
   const { region, credentials } = getSesConfig();
 
   if (!sesClient)
   {
-    const config: { region: string; credentials?: { accessKeyId: string; secretAccessKey: string } } = { region };
-    if (credentials.accessKeyId && credentials.secretAccessKey)
+    const config: SESClientConfig = { region };
+    const federationRoleArn = process.env.SES_AWS_ROLE_ARN;
+    if (federationRoleArn)
+    {
+      config.credentials = webIdentityCredentials(federationRoleArn);
+    }
+    else if (credentials.accessKeyId && credentials.secretAccessKey)
     {
       config.credentials = {
         accessKeyId: credentials.accessKeyId,

@@ -151,7 +151,7 @@ export class SesStack extends cdk.Stack {
             });
         }
 
-        // Create IAM policy for SES sending (can be attached to Amplify execution role)
+        // Create IAM policy for SES sending (can be attached to a sending role)
         const sesSendPolicy = new iam.ManagedPolicy(this, 'SesSendPolicy', {
             managedPolicyName: `${this.stackName}-ses-send-policy`,
             description: 'Policy for sending emails via SES',

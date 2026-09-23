@@ -2,7 +2,11 @@
 
 [English](ses-email-guide.md)
 
-このドキュメントでは、Next.js Amplify Starter Kit に組み込まれた AWS SES（Simple Email Service）を使ったメール送信機能について説明します。
+このドキュメントでは、tarophotos.com の問い合わせフォームが AWS SES（Simple Email Service）でメールを送信する仕組みについて説明します。
+
+> **最終更新**: 2026-09-23
+>
+> 本番は **Google Cloud Run** で稼働しています（AWS Amplify ではありません。Amplify は 2026-09-01 に削除済み）。SES は **鍵レスの federation**（Google OIDC → AWS `AssumeRoleWithWebIdentity`）で呼び出し、静的 IAM キーは使いません。
 
 ---
 
@@ -22,22 +26,46 @@
 
 ### 機能
 
-- **Next.js API Routes** を使ったサーバーサイドでのメール送信
-- **Zod** によるリクエストバリデーション
-- **AWS SDK v3** による効率的な SES 連携
-- 柔軟な送信先設定（環境変数、フォーム入力、API パラメータ）
-- HTML メール対応
-- CDK による自動インフラ構築
+- **Next.js Route Handler**（`POST /api/contact`）によるサーバーサイドでのメール送信
+- **AWS SDK v3**（`@aws-sdk/client-ses` / `SendEmailCommand`）による SES 連携
+- 本番は **鍵レス認証**: Cloud Run ランタイム SA の Google ID トークンを AWS の一時クレデンシャルに交換（`@aws-sdk/credential-providers` の `fromWebToken`）
+- `apps/web/docs/forms/contact_form_fields.json` に基づく必須項目・メール形式のバリデーション
+- スパム対策: honeypot・時間ゲート（3 秒）・IP 単位のレート制限（10 分に 5 回・インスタンスごとのインメモリ）
+- 1 回の送信で HTML + テキストのメールを 2 通送信: `SES_TO_EMAIL` への通知（Reply-To = 送信者）と、送信者への自動返信
 
 ### アーキテクチャ
 
 ```
-┌──────────────┐      ┌──────────────────┐      ┌─────────────┐
-│  Contact     │ POST │  Next.js API     │      │  AWS SES    │
-│  Form        │──────│  /api/contact    │──────│             │
-│  (Client)    │      │  (Server)        │      │  Email      │
-└──────────────┘      └──────────────────┘      └─────────────┘
+┌──────────────┐ POST ┌─────────────────────────┐ ID token ┌──────────────────┐
+│  問い合わせ   │──────│  Next.js on Cloud Run   │──────────│  GCP metadata    │
+│  フォーム     │      │  /api/contact           │          │  server          │
+│  (Client)    │      │  (runtime SA)           │          └──────────────────┘
+└──────────────┘      └─────────────────────────┘
+                                   │ AssumeRoleWithWebIdentity
+                                   ▼
+                      ┌─────────────────────────┐          ┌──────────────────┐
+                      │  AWS STS                │─────────▶│  AWS SES         │
+                      │  role:                  │ SendEmail│  Email           │
+                      │  tarophotos-ses-        │          │                  │
+                      │  federation             │          │                  │
+                      └─────────────────────────┘          └──────────────────┘
 ```
+
+1. ランタイム SA（`tarophotos-runtime@iwillink-web.iam.gserviceaccount.com`）が metadata server から Google 署名の ID トークン（audience `sts.amazonaws.com`）を取得
+2. そのトークンで `SES_AWS_ROLE_ARN` のロール（`tarophotos-ses-federation`）に `AssumeRoleWithWebIdentity`
+3. 得た一時クレデンシャルで `ses:SendEmail`
+
+AWS 側ロールの台帳は [willink-infra の `docs/aws-federation`](https://github.com/i-Willink-LLC/willink-infra/tree/main/docs/aws-federation/tarophotos-ses-federation) にあります。
+
+### クレデンシャルの解決順序
+
+`apps/web/src/app/api/_lib/process-form-submission.ts` の `getSesClient()` は次の順で認証情報を選びます。
+
+| 順位 | 条件 | 認証情報 |
+|-----|------|---------|
+| 1 | `SES_AWS_ROLE_ARN` が設定されている | GCP metadata server 経由の federation（GCP 上 = Cloud Run などでのみ動作） |
+| 2 | `SES_AWS_ACCESS_KEY_ID` / `SES_AWS_SECRET_ACCESS_KEY` が設定されている | 静的キー — Amplify 時代の後方互換コードの残り。**使用しない** |
+| 3 | どちらもない | AWS SDK の既定の認証情報チェーン（例: `AWS_PROFILE` で指定した SSO プロファイル） |
 
 ---
 
@@ -45,96 +73,102 @@
 
 ### 前提条件
 
-SES メール機能を使用するには、以下の前提条件が必要です。
-
 | 項目 | 必須 | 説明 |
 |-----|------|------|
 | AWS アカウント | ✅ | SES を利用するため |
-| AWS CLI 設定済み | ✅ | `aws configure` で認証情報を設定 |
-| Route53 ホストゾーン | 推奨 | ドメイン検証に使用（自動 DKIM 設定） |
-| 独自ドメイン | 推奨 | 本番運用ではドメイン検証を推奨 |
+| SES の検証済み ID | ✅ | `SES_FROM_EMAIL`（またはそのドメイン）が SES で検証済みであること |
+| federation ロール | ✅（本番） | `tarophotos-ses-federation`。Cloud Run ランタイム SA を信頼（willink-infra で管理） |
+| AWS CLI（SSO） | ローカルで実送信する場合のみ | `aws sso login` による一時クレデンシャル |
 
 > [!IMPORTANT]
 > **ドメイン検証 vs メールアドレス検証**
-> 
+>
 > - **メールアドレス検証**: 特定のメールアドレスのみ送信元として使用可能
-> - **ドメイン検証**: ドメイン配下の全てのメールアドレスが送信元として使用可能（推奨）
+> - **ドメイン検証**: ドメイン配下の全メールアドレスを送信元として使用可能（推奨）
 
 ### 1. 環境変数の設定
 
+| 変数名 | 必須 | 説明 |
+|-------|------|------|
+| `SES_FROM_EMAIL` | ✅ | 送信元アドレス。未設定時は `CONTACT_FROM_EMAIL` を参照。両方ないと `/api/contact` は 500 |
+| `SES_TO_EMAIL` | ✅ | 通知の送信先。未設定時は `CONTACT_NOTIFICATION_EMAIL` を参照。両方ないと `/api/contact` は 500 |
+| `SES_REGION` | - | SES のリージョン（デフォルト: `ap-northeast-1`） |
+| `SES_AWS_ROLE_ARN` | 本番のみ | federation ロールの ARN。**ローカルでは設定しない**（GCP metadata server が無いため） |
+
 #### ローカル開発環境
 
-`apps/web/.env.local` ファイルを作成し、以下の環境変数を設定します：
+「送信をスキップする」「ログ出力のみ」といったモードはありません。`/api/contact` は常に SES を呼び出します。
+
+- **画面の確認だけしたい場合**: `SES_FROM_EMAIL` を設定しないでください。送信すると 500（`Email delivery is not configured.`）が返り、何も送信されません。
+- **実際に送信したい場合**: `apps/web/.env.local` を作成して（`apps/web/.env.local.example` 参照）SES のアドレスを設定し、一時クレデンシャルの AWS プロファイルで開発サーバーを起動します。静的アクセスキーはファイルに書かないでください。
 
 ```bash
-# AWS Credentials (AWS CLI で設定済みの場合は不要)
-# AWS_ACCESS_KEY_ID=your-access-key-id
-# AWS_SECRET_ACCESS_KEY=your-secret-access-key
-AWS_REGION=ap-northeast-1
-
-# SES Configuration
+# apps/web/.env.local
 SES_FROM_EMAIL=noreply@yourdomain.com
 SES_TO_EMAIL=contact@yourdomain.com
+# SES_REGION=ap-northeast-1
+# SES_AWS_ROLE_ARN はローカルでは設定しない
 ```
 
-#### 本番環境（Amplify）
+```bash
+aws sso login --profile your-profile
+AWS_PROFILE=your-profile pnpm dev
+```
 
-Amplify コンソールで環境変数を設定します：
+プロファイルには送信元 ID に対する `ses:SendEmail` 権限が必要です。また SES のサンドボックス制限を受けます（[SES サンドボックスモード](#-ses-サンドボックスモード) 参照）。
 
-1. Amplify コンソール → アプリ → 環境変数
-2. 以下の変数を追加：
-   - `SES_FROM_EMAIL`
-   - `SES_TO_EMAIL`
-   - `SES_REGION` (オプション)
+#### 本番環境（Cloud Run）
 
-> **Note**: AWS 認証情報は Amplify の実行ロールから自動的に取得されるため、`AWS_ACCESS_KEY_ID` などは不要です。
+実行時の環境変数は GitHub の **repository variables**（secrets ではない）で管理します: **Settings → Secrets and variables → Actions → Variables**
+
+| Repository variable | 説明 |
+|---------------------|------|
+| `SES_REGION` | SES のリージョン |
+| `SES_FROM_EMAIL` | 送信元アドレス |
+| `SES_TO_EMAIL` | 通知の送信先 |
+| `SES_AWS_ROLE_ARN` | `tarophotos-ses-federation` の ARN |
+
+`.github/workflows/deploy-gcp.yml` が `gcloud run deploy --update-env-vars` で Cloud Run に渡すため、変更は次回のデプロイ（`main` への push またはワークフローの手動実行）で反映されます。
+
+> ⚠️ `SES_AWS_ROLE_ARN` が未設定だとデプロイは **fail-closed で止まります**（静的キーへの無言フォールバックはしません）。
 
 ### 2. SES ドメイン検証（推奨）
 
-ドメイン検証を行うと、そのドメイン配下の全てのメールアドレスから送信できるようになります。
+ドメイン検証を行うと、そのドメイン配下の全メールアドレスから送信可能になります。
 
-#### 方法A: CDK で自動設定（Route53 使用時・推奨）
+#### 方法A: CDK（`infra/`）
 
-Route53 でドメインを管理している場合、CDK で DKIM レコードを自動作成できます。
+`infra/lib/ses-stack.ts` は SES ID（`SesStack`）を定義し、`ROUTE53_HOSTED_ZONE_ID` を設定すると Route53 に DKIM の CNAME レコードも作成します。**CI からは適用せず**、現状は手元からも deploy してはいけません（下記の警告参照）。
 
-1. **Hosted Zone ID を確認**
-   ```bash
-   aws route53 list-hosted-zones --query "HostedZones[*].[Id,Name]" --output table
-   ```
+> [!WARNING]
+> stack 名 `SesStack` は同一 AWS アカウント・リージョンの i-willink.com の stack（同サイトの本番 SES ID を保持）と衝突します（`.github/workflows/ci.yml` 末尾のコメント参照）。`cdk deploy` するとそれを上書きしてしまいます。名前の衝突を解消するまで `SesStack` は deploy せず、それまでは方法B またはコンソール / CLI の手順を使ってください。
 
-2. **`infra/.env` に設定を追加**
-   ```bash
-   SES_DOMAIN=yourdomain.com
-   ROUTE53_HOSTED_ZONE_ID=Z0123456789ABCDEFGHIJ
-   ```
+```bash
+# infra/.env（infra/.env.example 参照）
+SES_DOMAIN=yourdomain.com
+ROUTE53_HOSTED_ZONE_ID=Z0123456789ABCDEFGHIJ
+```
 
-3. **CDK デプロイを実行**
-   ```bash
-   cd infra
-   npx cdk deploy SesStack
-   ```
+```bash
+cd infra
+npx cdk synth
+```
 
-   DKIM CNAME レコードが自動的に Route53 に追加され、数分で検証が完了します。
+`ROUTE53_HOSTED_ZONE_ID` を設定しない場合は、stack が DKIM トークン 3 つを出力するので手動で追加します（方法B の手順 3）。
 
 #### 方法B: 手動で DNS レコードを設定
 
-Route53 以外の DNS プロバイダを使用している場合：
+1. **ドメイン ID を作成**（AWS コンソール → SES → Verified identities → Create identity → Domain）
 
-1. **CDK デプロイ（ROUTE53_HOSTED_ZONE_ID なし）**
-   ```bash
-   SES_DOMAIN=yourdomain.com
-   cd infra && npx cdk deploy SesStack
-   ```
+2. **DKIM トークンを確認**
+   ID に表示される 3 つの DKIM トークンを確認します。
 
-2. **出力された DKIM トークンを確認**
-   デプロイ出力に3つの DKIM トークンが表示されます。
+3. **DNS に CNAME レコードを追加**
 
-3. **DNS プロバイダで CNAME レコードを追加**
-   
-   各トークンに対して、以下の形式で CNAME レコードを追加：
-   
-   | Name | Type | Value |
-   |------|------|-------|
+   `tarophotos.com` のゾーンは Route53 にあります。各トークンについて以下の形式で CNAME レコードを追加:
+
+   | 名前 | タイプ | 値 |
+   |-----|-------|-----|
    | `{token1}._domainkey.yourdomain.com` | CNAME | `{token1}.dkim.amazonses.com` |
    | `{token2}._domainkey.yourdomain.com` | CNAME | `{token2}.dkim.amazonses.com` |
    | `{token3}._domainkey.yourdomain.com` | CNAME | `{token3}.dkim.amazonses.com` |
@@ -147,14 +181,14 @@ Route53 以外の DNS プロバイダを使用している場合：
 
 ### 3. SES メールアドレス検証（シンプル）
 
-特定のメールアドレスのみを検証する場合：
+特定のメールアドレスのみを検証する場合:
 
 #### AWS コンソールで検証する場合
 
 1. AWS コンソール → SES → Verified identities
 2. 「Create identity」→「Email address」を選択
 3. 送信元メールアドレスを入力
-4. 送信された確認メールのリンクをクリック
+4. 届いた確認メールのリンクをクリック
 
 #### CLI で検証する場合
 
@@ -167,68 +201,20 @@ aws sesv2 create-email-identity --email-identity noreply@yourdomain.com --region
 
 ## 📧 使用方法
 
-### サンプル問い合わせページ
-
-スターターキットには、検証用のサンプル問い合わせページが含まれています：
+### 問い合わせページ
 
 - **URL**: `/contact`
-- **ソース**: `apps/web/src/app/contact/page.tsx`
-
-開発サーバーを起動して動作を確認できます：
+- **ページ**: `apps/web/src/app/contact/page.tsx`
+- **フォームコンポーネント**: `apps/web/src/components/contact/ContactForm.tsx`
 
 ```bash
 pnpm dev
 # http://localhost:3000/contact にアクセス
 ```
 
-### API を直接呼び出す
+### フォームを追加する場合
 
-```typescript
-const response = await fetch('/api/contact', {
-    method: 'POST',
-    headers: {
-        'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-        name: '山田太郎',
-        email: 'yamada@example.com',
-        subject: 'お問い合わせ',
-        message: 'お問い合わせ内容をここに記入します。',
-    }),
-});
-
-const result = await response.json();
-if (result.success) {
-    console.log('送信成功:', result.messageId);
-} else {
-    console.error('送信失敗:', result.error);
-}
-```
-
-### ses-client を直接使用する
-
-サーバーサイドのコードから直接 `ses-client` を使用することもできます：
-
-```typescript
-import { sendContactEmail, sendEmail } from '@/lib/ses-client';
-
-// 問い合わせメール形式で送信
-await sendContactEmail({
-    name: '山田太郎',
-    email: 'yamada@example.com',
-    subject: 'お問い合わせ',
-    message: 'メッセージ本文',
-});
-
-// カスタム形式で送信
-await sendEmail({
-    to: ['recipient1@example.com', 'recipient2@example.com'],
-    subject: 'カスタムメール',
-    body: 'プレーンテキスト本文',
-    htmlBody: '<h1>HTML本文</h1>',
-    replyTo: 'reply@example.com',
-});
-```
+`apps/web/src/app/api/_lib/process-form-submission.ts` の `processFormSubmission()` は共通処理です。新しい Route Handler から `formKey`・`notificationEmail`・`fieldDefinitions`・`subject`・（任意で）`autoResponse` を渡して呼び出します（完全な例は `apps/web/src/app/api/contact/route.ts`）。
 
 ---
 
@@ -236,54 +222,47 @@ await sendEmail({
 
 ### POST /api/contact
 
-お問い合わせフォームからのメール送信 API です。
+問い合わせフォームからメールを送信する API エンドポイントです。
 
 #### リクエスト
 
+```json
+{
+  "fields": {
+    "category": "General Inquiry",
+    "name": "山田太郎",
+    "email": "yamada@example.com",
+    "company": "",
+    "message": "お問い合わせ内容をここに記載します。",
+    "agree": "同意する"
+  },
+  "website": "",
+  "elapsedMs": 8000
+}
+```
+
 | フィールド | 型 | 必須 | 説明 |
-|-----------|-----|------|------|
-| `name` | string | ✅ | 送信者名（1-100文字） |
-| `email` | string | ✅ | 送信者メールアドレス |
-| `subject` | string | - | 件名（0-200文字） |
-| `message` | string | ✅ | メッセージ本文（1-5000文字） |
-| `to` | string \| string[] | - | 追加の送信先 |
+|-----------|-----|-----|------|
+| `fields` | object | ✅ | フォームの値。キー・ラベル・必須フラグは `apps/web/docs/forms/contact_form_fields.json` で定義（`category` / `name` / `email` / `message` / `agree` が必須。`email` はメール形式であること） |
+| `website` | string | - | honeypot。空であること |
+| `elapsedMs` | number | ✅ | フォーム表示から送信までのミリ秒。欠落または 3000 未満は bot 扱い |
+
+> `website` と `elapsedMs` は通知メールに載らないよう、`fields` の外（トップレベル）で送ります。
 
 #### レスポンス
 
-**成功時 (200)**
-```json
-{
-    "success": true,
-    "messageId": "0102018d1234abcd-12345678-1234-1234-1234-123456789abc-000000"
-}
-```
+レスポンスはすべて `message` フィールドを持つ JSON です。
 
-**バリデーションエラー (400)**
-```json
-{
-    "success": false,
-    "error": "Validation failed",
-    "details": [
-        {
-            "code": "too_small",
-            "minimum": 1,
-            "type": "string",
-            "inclusive": true,
-            "exact": false,
-            "message": "Name is required",
-            "path": ["name"]
-        }
-    ]
-}
-```
-
-**サーバーエラー (500)**
-```json
-{
-    "success": false,
-    "error": "Email was rejected. Please check if the sender email is verified in SES."
-}
-```
+| ステータス | `message` | 意味 |
+|-----------|-----------|------|
+| 200 | `Contact request received.` | 送信成功。**スパム判定（honeypot / 時間ゲート）で静かに破棄した場合も同じ応答** |
+| 400 | `Invalid JSON body` | ボディが JSON でない |
+| 400 | `Missing required field: <label>` | 必須項目が空 |
+| 400 | `Invalid email format: <label>` | メール形式が不正 |
+| 429 | `Too many requests. Please try again later.` | 同一 IP から 10 分間に 5 回を超える送信 |
+| 500 | `Email delivery is not configured.` | `SES_FROM_EMAIL` が未設定 |
+| 500 | `Contact notification email is not configured.` | `SES_TO_EMAIL` が未設定 |
+| 500 | `Email delivery failed: ...` / `Failed to send email.` | SES・認証情報のエラー（詳細は `error`） |
 
 ---
 
@@ -291,28 +270,30 @@ await sendEmail({
 
 ### サンドボックスモードとは
 
-**新規 AWS アカウントでは、SES はサンドボックモードで動作します。**
+**新規 AWS アカウントでは、SES はサンドボックスモードで動作します。**
 
-サンドボックモードでは以下の制限があります：
+サンドボックスモードでは以下の制限があります：
 
 | 制限 | 内容 |
 |-----|------|
-| 送信先 | **検証済みのメールアドレスにのみ** 送信可能 |
-| 送信量 | 1日200通まで |
-| 送信レート | 1秒あたり1通まで |
+| 送信先 | **検証済みのメールアドレスのみ**に送信可能 |
+| 送信数 | 1日あたり最大 200 通 |
+| 送信レート | 1秒あたり最大 1 通 |
+
+> サンドボックスでは、送信者のアドレスが検証済みでない限り、送信者への自動返信は失敗します。
 
 ### サンドボックスを解除する方法
 
-本番環境でメール機能を使用するには、サンドボックの解除申請が必要です。
+本番環境でメール機能を使用するには、本番アクセスのリクエストが必要です。
 
 1. AWS コンソール → SES → Account dashboard
 2. 「Request production access」をクリック
-3. 以下の情報を入力：
-   - **Mail type**: Transactional（トランザクションメール）
-   - **Website URL**: あなたのウェブサイトURL
-   - **Use case description**: メールの使用目的を説明
-     - 例：「お問い合わせフォームからの通知メール送信に使用します」
-4. 送信して AWS からの承認を待つ（通常24-48時間）
+3. 以下の情報を入力:
+   - **Mail type**: Transactional
+   - **Website URL**: あなたのウェブサイト URL
+   - **Use case description**: 使用目的の説明
+     - 例: "Contact form notification emails from our website"
+4. 送信後、AWS からの承認を待つ（通常 24〜48 時間）
 
 ### 開発時の対処
 
@@ -320,11 +301,11 @@ await sendEmail({
 
 1. **送信元メールアドレスを検証**
    - SES → Verified identities → Create identity
-   - メールで届くリンクをクリック
+   - 確認メールのリンクをクリック
 
 2. **送信先メールアドレスも検証**
-   - 開発中はテスト用の送信先も検証が必要
-   - 同様に SES で検証を行う
+   - 開発中は受信先アドレスも検証が必要
+   - 同様に SES で検証
 
 3. **検証済みメールアドレス間でテスト**
    - 送信元・送信先ともに検証済みであればメール送信可能
@@ -341,20 +322,19 @@ AWS SES の料金は非常に低コストです。詳細は公式の料金ペー
 
 | 項目 | 料金 |
 |-----|------|
-| EC2 / Amplify からの送信 | **最初の 62,000 通/月は無料**、以降 $0.10/1,000通 |
-| その他からの送信 | $0.10/1,000通 |
+| 送信 | $0.10/1,000通 |
 | 添付ファイル | $0.12/GB |
-| 受信 | 最初の 1,000 通/月は無料、以降 $0.10/1,000通 |
 
-> **Note**: 上記は概算です。最新の正確な料金は [公式料金ページ](https://aws.amazon.com/jp/ses/pricing/) をご確認ください。
+> **Note**: 上記は概算です。無料枠の条件は変更されることがあるため、最新の正確な料金は [公式料金ページ](https://aws.amazon.com/jp/ses/pricing/) をご確認ください。
 
 ### コスト試算例
 
-| ユースケース | 月間送信数 | 概算コスト |
-|------------|----------|----------|
-| 小規模サイトの問い合わせ | 100通 | **無料** |
-| 中規模サイト | 5,000通 | **無料** |
-| 大規模サイト | 100,000通 | 約 $3.80 |
+問い合わせ 1 件につき **2 通**（通知 + 自動返信）を送信します。
+
+| ユースケース | 月間問い合わせ数 | 月間送信数 | 概算コスト |
+|------------|---------------|----------|----------|
+| 通常 | 50件 | 100通 | 約 $0.01 |
+| 繁忙期 | 2,500件 | 5,000通 | 約 $0.50 |
 
 ---
 
@@ -362,50 +342,63 @@ AWS SES の料金は非常に低コストです。詳細は公式の料金ペー
 
 ### よくあるエラー
 
-#### 「Email was rejected」
+#### 「Email delivery is not configured.」
 
-**原因**: 送信元メールアドレスが SES で検証されていない
-
-**解決方法**:
-1. SES コンソールで送信元メールアドレスを検証
-2. 確認メールのリンクをクリック
-3. 環境変数 `SES_FROM_EMAIL` が正しいか確認
-
-#### 「No recipient specified」
-
-**原因**: 送信先が指定されていない
+**原因**: `SES_FROM_EMAIL`（および `CONTACT_FROM_EMAIL`）が未設定
 
 **解決方法**:
-1. 環境変数 `SES_TO_EMAIL` を設定
-2. または API リクエストで `to` パラメータを指定
+1. ローカル: `apps/web/.env.local` に設定して `pnpm dev` を再起動
+2. 本番: repository variable `SES_FROM_EMAIL` を確認して再デプロイ
 
-#### 「Access Denied」
+#### 「Contact notification email is not configured.」
 
-**原因**: IAM 権限が不足している
+**原因**: `SES_TO_EMAIL`（および `CONTACT_NOTIFICATION_EMAIL`）が未設定
 
-**解決方法**:
-1. Amplify の実行ロールに SES 送信権限を追加
-2. CDK でデプロイした場合は `SesSendPolicy` をロールにアタッチ
+**解決方法**: 上記と同様に `SES_TO_EMAIL` を設定
 
-#### サンドボックスでの送信エラー
+#### 「Email delivery failed: Address not verified or spam detected.」
 
-**原因**: 送信先メールアドレスが検証されていない
+**原因**: SES の `MessageRejected` — 送信元（サンドボックスでは送信先も）が未検証
 
 **解決方法**:
-1. 送信先メールアドレスも SES で検証
-2. または本番アクセスを申請
+1. SES コンソールで ID を検証
+2. `SES_FROM_EMAIL` を確認
+3. サンドボックスでは送信先も検証するか、本番アクセスをリクエスト
+
+#### 「Email delivery failed: Access denied. Check IAM permissions.」
+
+**原因**: 引き受けたロール（ローカルではプロファイル）に送信元 ID への `ses:SendEmail` 権限がない
+
+**解決方法**: willink-infra で `tarophotos-ses-federation` の権限を確認（ローカルでは SSO プロファイルの権限を確認）
+
+#### 「Failed to send email.」（認証情報のエラー）
+
+| `error` / ログの内容 | 原因 | 解決方法 |
+|---------------------|------|---------|
+| `GCP metadata identity token fetch failed: ...` または `metadata.google.internal` への fetch エラー | GCP 外（ローカルなど）で `SES_AWS_ROLE_ARN` を設定している、またはランタイム SA が ID トークンを発行できない | ローカルでは `SES_AWS_ROLE_ARN` を外す。本番では Cloud Run のランタイム SA を確認 |
+| `Not authorized to perform sts:AssumeRoleWithWebIdentity` など | `tarophotos-ses-federation` の信頼ポリシーがトークン（audience / subject）と一致しない | willink-infra の `docs/aws-federation` でロールを確認 |
+| `Could not load credentials from any providers` | ローカルでロール ARN も AWS プロファイル・認証情報もない | `aws sso login` して `AWS_PROFILE` 付きで起動 |
+
+#### 送信成功と表示されるのにメールが届かない
+
+**原因**: スパム判定で静かに破棄された（意図的に 200 を返す）
+
+**解決方法**: サーバーログで `[forms:contact] submission dropped: honeypot` または `too_fast` を確認。API を直接呼ぶ場合は `elapsedMs` を 3000 以上にする。
 
 ### ログの確認
 
-API エラーは Next.js のサーバーログに出力されます：
+送信成功時は `[forms:contact] email sent to ...`、失敗時は `contact email send failed` と `SES Error Name: ...` がログに出力されます。
 
 ```bash
 # 開発時
 pnpm dev
 # コンソールでエラーメッセージを確認
 
-# Amplify 本番環境
-# Amplify コンソール → Monitoring → Access logs
+# 本番（Cloud Run）
+gcloud logging read \
+  'resource.type="cloud_run_revision" AND resource.labels.service_name="tarophotos"' \
+  --project=iwillink-web --limit=50
+# または Google Cloud コンソール → Cloud Run → tarophotos → ログ
 ```
 
 ---
@@ -414,9 +407,12 @@ pnpm dev
 
 | ファイル | 説明 |
 |---------|------|
-| `apps/web/src/lib/ses-client.ts` | SES クライアントとメール送信ユーティリティ |
+| `apps/web/src/app/api/_lib/process-form-submission.ts` | SES クライアント・認証情報の解決・バリデーション・メール生成 |
+| `apps/web/src/app/api/_lib/spam-guard.ts` | honeypot / 時間ゲート / レート制限 |
 | `apps/web/src/app/api/contact/route.ts` | 問い合わせ API エンドポイント |
-| `apps/web/src/app/contact/page.tsx` | サンプル問い合わせページ |
-| `apps/web/.env.local.example` | 環境変数テンプレート |
-| `infra/lib/ses-stack.ts` | SES リソースの CDK 定義 |
-| `infra/.env.example` | インフラ環境変数テンプレート |
+| `apps/web/src/components/contact/ContactForm.tsx` | 問い合わせフォーム（クライアント） |
+| `apps/web/docs/forms/contact_form_fields.json` | 問い合わせフォームの項目定義 |
+| `apps/web/.env.local.example` | ローカル用環境変数テンプレート |
+| `.github/workflows/deploy-gcp.yml` | repository variables を Cloud Run に配線 |
+| `infra/lib/ses-stack.ts` | SES ID の CDK 定義（stack 名衝突のため deploy しない） |
+| `infra/.env.example` | インフラ用環境変数テンプレート |

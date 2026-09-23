@@ -1,11 +1,14 @@
-# Next.js Amplify Starter Kit
+# tarophotos.com
 
 [日本語 (Japanese)](README.ja.md)
 
-[![CI](https://github.com/i-Willink-Inc/next-amplify-starter-kit/actions/workflows/ci.yml/badge.svg)](https://github.com/i-Willink-Inc/next-amplify-starter-kit/actions/workflows/ci.yml)
+[![CI](https://github.com/Taro-Photos/tarophotos.com/actions/workflows/ci.yml/badge.svg)](https://github.com/Taro-Photos/tarophotos.com/actions/workflows/ci.yml)
+[![Deploy to GCP](https://github.com/Taro-Photos/tarophotos.com/actions/workflows/deploy-gcp.yml/badge.svg)](https://github.com/Taro-Photos/tarophotos.com/actions/workflows/deploy-gcp.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-A starter kit aggregating modern web development best practices. Features a monorepo structure with Next.js + AWS Amplify + CDK to launch web sites fastest and provide a scalable foundation.
+Source for the Taro Photos website (tarophotos.com). A Next.js monorepo served from **Google Cloud Run behind Firebase Hosting**. The contact form sends mail through AWS SES using keyless federation (no static IAM keys).
+
+> Originally based on [next-amplify-starter-kit](https://github.com/willink-oss/next-amplify-starter-kit). Production moved from AWS Amplify to Cloud Run + Firebase Hosting in 2026-07, and the Amplify app was deleted on 2026-09-01. See [docs/HANDOFF.md](docs/HANDOFF.md) for the current state.
 
 ---
 
@@ -14,8 +17,8 @@ A starter kit aggregating modern web development best practices. Features a mono
 - [Features](#-features)
 - [Project Structure](#-project-structure)
 - [Quick Start](#-quick-start)
-- [Deploy to AWS](#-deploy-to-aws)
-- [Required Environment Variables & Secrets](#-required-environment-variables--secrets)
+- [Deployment](#-deployment)
+- [Required Environment Variables](#-required-environment-variables)
 - [Available Commands](#-available-commands)
 - [Documentation](#-documentation)
 
@@ -26,10 +29,11 @@ A starter kit aggregating modern web development best practices. Features a mono
 | Technology | Description |
 |------------|-------------|
 | 🚀 **Turborepo** | High-performance build system and monorepo management |
-| ⚡ **Next.js 15** | App Router + React 19 + SSR support |
-| ☁️ **AWS CDK** | Infrastructure as Code for reproducibility |
+| ⚡ **Next.js 16** | App Router + React 19 + SSR (standalone output for Cloud Run) |
+| ☁️ **Cloud Run + Firebase Hosting** | Container hosting; Firebase Hosting rewrites every request to Cloud Run |
+| 📧 **AWS SES** | Contact form email via Google OIDC → AWS `AssumeRoleWithWebIdentity` (keyless) |
 | 🎨 **Tailwind CSS** | Utility-first styling |
-| 🔄 **GitHub Actions** | Complete CI/CD pipeline |
+| 🔄 **GitHub Actions** | CI checks (`ci.yml`) + keyless deploy to GCP (`deploy-gcp.yml`) |
 | 📦 **pnpm** | Fast and efficient package management |
 | 🐳 **Devcontainer** | Consistent development environment |
 
@@ -38,18 +42,20 @@ A starter kit aggregating modern web development best practices. Features a mono
 ## 📁 Project Structure
 
 ```
-next-amplify-starter-kit/
+tarophotos.com/
 ├── apps/
 │   └── web/                 # Next.js Application
 ├── packages/
 │   ├── tsconfig/            # Shared TypeScript Config
 │   └── eslint-config/       # Shared ESLint Config
-├── infra/                   # AWS CDK Infrastructure Code
+├── infra/                   # AWS CDK (SES identity only; not deployed — see below)
 ├── docs/                    # Documentation
 │   ├── 00_project/          # Project Management
 │   ├── 20_development/      # Development Guide
 │   └── 30_operations/       # Operations Guide
-└── .github/workflows/       # CI/CD Definitions
+├── Dockerfile               # Cloud Run image (Next.js standalone)
+├── firebase.json            # Firebase Hosting config (rewrites all requests to Cloud Run)
+└── .github/workflows/       # CI (ci.yml) / Deploy (deploy-gcp.yml)
 ```
 
 ---
@@ -60,15 +66,15 @@ next-amplify-starter-kit/
 
 | Tool | Minimum Version | Recommended |
 |------|-----------------|-------------|
-| Node.js | 18.17.0 | 20.x LTS |
-| pnpm | 8.0.0 | 9.x |
+| Node.js | 18.17.0 | 20.x LTS (same as CI and the Docker image) |
+| pnpm | 8.0.0 | 10.x (`packageManager` in `package.json`) |
 | Docker | - | Latest (When using Devcontainer) |
 
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/i-Willink-Inc/next-amplify-starter-kit.git
-cd next-amplify-starter-kit
+git clone https://github.com/Taro-Photos/tarophotos.com.git
+cd tarophotos.com
 ```
 
 ### 2. Install Dependencies
@@ -85,6 +91,8 @@ pnpm dev
 
 Access the application at http://localhost:3000.
 
+> The contact form needs SES settings to actually send mail locally. See the [SES Email Guide](docs/20_development/ses-email-guide.md#local-development-environment).
+
 ### Using Devcontainer (Recommended)
 
 1. Start Docker Desktop or Rancher Desktop.
@@ -95,82 +103,55 @@ Access the application at http://localhost:3000.
 
 ---
 
-## ☁️ Deploy to AWS
+## ☁️ Deployment
 
 ### Deploy Flow
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│  Step 1: CDK Deploy (Local or GitHub Actions)                   │
-│          → Create Amplify service on AWS                        │
-│          → Set up GitHub repository connection                  │
+│  Step 1: Merge to main (apps/web/**, packages/**, Dockerfile,   │
+│          firebase.json, deploy-gcp.yml, pnpm-lock.yaml)         │
+│          → .github/workflows/deploy-gcp.yml starts              │
 └─────────────────────────────────────────────────────────────────┘
                               ↓
 ┌─────────────────────────────────────────────────────────────────┐
-│  Step 2: Merge to main branch                                   │
-│          → Amplify automatically detects changes                │
-│          → Build and deploy according to amplify.yml            │
+│  Step 2: GitHub Actions OIDC → GCP Workload Identity Federation │
+│          → docker build → push to Artifact Registry             │
+│          → gcloud run deploy (Cloud Run service `tarophotos`)   │
+└─────────────────────────────────────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────────┐
+│  Step 3: firebase deploy --only hosting:tarophotos-web          │
+│          → Firebase Hosting rewrites all requests to Cloud Run  │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-### Pattern 1: Deploy from Local (Recommended for Initial Setup)
-
-Easy deployment using `.env` file.
-
-```bash
-# 1. Setup Environment Variables
-cp infra/.env.example infra/.env
-# Edit infra/.env to set AWS credentials and GITHUB_TOKEN
-
-# 2. CDK Deploy
-cd infra
-npx cdk deploy
-```
-
-### Pattern 2: Auto Deploy from GitHub Actions
-
-1. Set credentials in GitHub Secrets (see below).
-2. Modify files under `infra/` and merge to `main`.
-3. GitHub Actions automatically executes CDK deploy.
+- No GitHub Secrets or cloud keys are needed: authentication is keyless (Workload Identity Federation).
+- Manual re-deploy: Actions → **Deploy to GCP (Cloud Run + Firebase Hosting)** → Run workflow.
+- `ci.yml` is checks only (lint / type check / test / build / e2e / cdk synth). It has no deploy job.
 
 For detailed instructions, refer to the [Deployment Guide](docs/30_operations/deployment.md).
 
 ---
 
-## 🔐 Required Environment Variables & Secrets
+## 🔐 Required Environment Variables
 
-### AWS Secrets Manager (Required)
+### GitHub Repository Variables (Production Runtime)
 
-| Secret Name | Value | Description |
-|-------------|-------|-------------|
-| `github/amplify-token` | `ghp_xxxxxxxx` | GitHub Personal Access Token |
+Set under **Settings → Secrets and variables → Actions → Variables** (these are *variables*, not secrets). `deploy-gcp.yml` wires them into Cloud Run with `--update-env-vars`.
 
-**Required GitHub PAT Scopes:**
-- `repo` - Full control of private repositories
-- `admin:repo_hook` - Full control of repository hooks
+| Variable | Description |
+|----------|-------------|
+| `SES_REGION` | AWS region for SES |
+| `SES_FROM_EMAIL` | Sender address (must be verified in SES) |
+| `SES_TO_EMAIL` | Recipient of contact form notifications |
+| `SES_AWS_ROLE_ARN` | AWS role assumed via web identity federation (`tarophotos-ses-federation`) |
 
-### Local Environment Variables (For Pattern 1)
+> ⚠️ If `SES_AWS_ROLE_ARN` is unset, the deploy **fails closed** (it never silently falls back to static keys).
 
-| Environment Variable | Example | Description |
-|----------------------|---------|-------------|
-| `AWS_ACCESS_KEY_ID` | `AKIAXXXXXXXX` | IAM Access Key ID |
-| `AWS_SECRET_ACCESS_KEY` | `xxxxxxxx` | IAM Secret Access Key |
-| `AWS_DEFAULT_REGION` | `ap-northeast-1` | Default Region |
+### Local Environment Variables
 
-### GitHub Secrets (For Pattern 2)
-
-#### Method A: OIDC Authentication (Recommended)
-
-| Secret Name | Example |
-|-------------|---------|
-| `AWS_ROLE_ARN` | `arn:aws:iam::123456789012:role/GitHubActionsRole` |
-
-#### Method B: Access Key Authentication
-
-| Secret Name | Example |
-|-------------|---------|
-| `AWS_ACCESS_KEY_ID` | `AKIAXXXXXXXX` |
-| `AWS_SECRET_ACCESS_KEY` | `xxxxxxxx` |
+See the [SES Email Guide](docs/20_development/ses-email-guide.md#local-development-environment).
 
 ---
 
@@ -186,11 +167,13 @@ For detailed instructions, refer to the [Deployment Guide](docs/30_operations/de
 
 ### CDK Commands (infra/)
 
+`infra/` only defines the SES identity (`SesStack`). It is **not** applied from CI.
+
 | Command | Description |
 |---------|-------------|
-| `npx cdk diff` | Compare stack with deployed version |
-| `npx cdk deploy` | Deploy stack |
-| `npx cdk synth` | Generate CloudFormation template |
+| `npx cdk synth` | Generate CloudFormation template (also run by CI) |
+
+> ⚠️ Do not run `npx cdk deploy`. The stack name `SesStack` collides with the i-willink.com stack in the same AWS account/region, which holds that site's production SES identity (see the comment at the end of `.github/workflows/ci.yml`). Do not deploy it until the name collision is resolved.
 
 ---
 
@@ -198,10 +181,14 @@ For detailed instructions, refer to the [Deployment Guide](docs/30_operations/de
 
 | Document | Target | Description |
 |----------|--------|-------------|
+| [HANDOFF](docs/HANDOFF.md) | Everyone | Summary of the current production setup |
 | [Documentation Rules](docs/00_project/DOCUMENT_RULES.md) | Developers | How to write documentation |
 | [Getting Started](docs/20_development/getting-started.md) | Developers | Setting up development environment |
 | [Devcontainer Guide](docs/20_development/devcontainer-guide.md) | Developers | How to use Docker dev environment |
-| [Deployment Guide](docs/30_operations/deployment.md) | Operators | AWS deployment instructions |
+| [SES Email Guide](docs/20_development/ses-email-guide.md) | Developers | Contact form email sending |
+| [Deployment Guide](docs/30_operations/deployment.md) | Operators | Cloud Run + Firebase Hosting deployment |
+| [CI/CD Pipeline](docs/30_operations/ci-cd-pipeline.md) | Operators | `ci.yml` / `deploy-gcp.yml` specification |
+| [Verification Guide](docs/30_operations/verification-guide.md) | Operators | Post-deploy verification |
 
 ---
 

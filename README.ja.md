@@ -1,11 +1,14 @@
-# Next.js Amplify Starter Kit
+# tarophotos.com
 
 [English](README.md)
 
-[![CI](https://github.com/i-Willink-Inc/next-amplify-starter-kit/actions/workflows/ci.yml/badge.svg)](https://github.com/i-Willink-Inc/next-amplify-starter-kit/actions/workflows/ci.yml)
+[![CI](https://github.com/Taro-Photos/tarophotos.com/actions/workflows/ci.yml/badge.svg)](https://github.com/Taro-Photos/tarophotos.com/actions/workflows/ci.yml)
+[![Deploy to GCP](https://github.com/Taro-Photos/tarophotos.com/actions/workflows/deploy-gcp.yml/badge.svg)](https://github.com/Taro-Photos/tarophotos.com/actions/workflows/deploy-gcp.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-モダンな Web 開発のベストプラクティスを集約したスターターキットです。Next.js + AWS Amplify + CDK によるモノレポ構成で、最速で Web サイトを立ち上げ、かつスケーラブルな基盤を提供します。
+Taro Photos の Web サイト（tarophotos.com）のソースコードです。Next.js のモノレポ構成で、**Firebase Hosting 経由の Google Cloud Run** で配信しています。問い合わせフォームのメールは AWS SES から鍵レスの federation（静的 IAM キーなし）で送信します。
+
+> [next-amplify-starter-kit](https://github.com/willink-oss/next-amplify-starter-kit) をベースに開始。本番は 2026-07 に AWS Amplify から Cloud Run + Firebase Hosting へ移行し、Amplify app は 2026-09-01 に削除済みです。現行構成の要約は [docs/HANDOFF.md](docs/HANDOFF.md) を参照してください。
 
 ---
 
@@ -14,8 +17,8 @@
 - [特徴](#-特徴)
 - [プロジェクト構成](#-プロジェクト構成)
 - [クイックスタート](#-クイックスタート)
-- [AWS へのデプロイ](#-aws-へのデプロイ)
-- [必要な環境変数・シークレット](#-必要な環境変数シークレット)
+- [デプロイ](#-デプロイ)
+- [必要な環境変数](#-必要な環境変数)
 - [利用可能なコマンド](#-利用可能なコマンド)
 - [ドキュメント](#-ドキュメント)
 
@@ -26,11 +29,11 @@
 | 技術 | 説明 |
 |------|------|
 | 🚀 **Turborepo** | 高速なビルドキャッシュとモノレポ管理 |
-| ⚡ **Next.js 15** | App Router + React 19 + SSR対応 |
-| ☁️ **AWS CDK** | Infrastructure as Code で再現性を担保 |
-| 📧 **AWS SES** | メール送信機能（問い合わせフォーム対応） |
+| ⚡ **Next.js 16** | App Router + React 19 + SSR対応（Cloud Run 用に standalone 出力） |
+| ☁️ **Cloud Run + Firebase Hosting** | コンテナで配信。Firebase Hosting が全リクエストを Cloud Run へ rewrite |
+| 📧 **AWS SES** | 問い合わせフォームのメール送信（Google OIDC → AWS `AssumeRoleWithWebIdentity` の鍵レス認証） |
 | 🎨 **Tailwind CSS** | ユーティリティファーストなスタイリング |
-| 🔄 **GitHub Actions** | CI/CD パイプライン完備 |
+| 🔄 **GitHub Actions** | CI チェック（`ci.yml`）+ GCP への鍵レスデプロイ（`deploy-gcp.yml`） |
 | 📦 **pnpm** | 高速で効率的なパッケージ管理 |
 | 🐳 **Devcontainer** | 統一された開発環境 |
 
@@ -39,18 +42,20 @@
 ## 📁 プロジェクト構成
 
 ```
-next-amplify-starter-kit/
+tarophotos.com/
 ├── apps/
 │   └── web/                 # Next.js アプリケーション
 ├── packages/
 │   ├── tsconfig/            # 共有 TypeScript 設定
 │   └── eslint-config/       # 共有 ESLint 設定
-├── infra/                   # AWS CDK インフラコード
+├── infra/                   # AWS CDK（SES ID の定義のみ。deploy しない — 下記参照）
 ├── docs/                    # ドキュメント
 │   ├── 00_project/          # プロジェクト管理
 │   ├── 20_development/      # 開発ガイド
 │   └── 30_operations/       # 運用ガイド
-└── .github/workflows/       # CI/CD 定義
+├── Dockerfile               # Cloud Run 用イメージ（Next.js standalone）
+├── firebase.json            # Firebase Hosting 設定（全リクエストを Cloud Run へ rewrite）
+└── .github/workflows/       # CI（ci.yml）/ デプロイ（deploy-gcp.yml）
 ```
 
 ---
@@ -61,15 +66,15 @@ next-amplify-starter-kit/
 
 | ツール | 最小バージョン | 推奨 |
 |--------|--------------|------|
-| Node.js | 18.17.0 | 20.x LTS |
-| pnpm | 8.0.0 | 9.x |
+| Node.js | 18.17.0 | 20.x LTS（CI・Docker イメージと同じ） |
+| pnpm | 8.0.0 | 10.x（`package.json` の `packageManager`） |
 | Docker | - | 最新版（Devcontainer使用時） |
 
 ### 1. リポジトリのクローン
 
 ```bash
-git clone https://github.com/i-Willink-Inc/next-amplify-starter-kit.git
-cd next-amplify-starter-kit
+git clone https://github.com/Taro-Photos/tarophotos.com.git
+cd tarophotos.com
 ```
 
 ### 2. 依存関係のインストール
@@ -86,6 +91,8 @@ pnpm dev
 
 http://localhost:3000 でアプリケーションにアクセスできます。
 
+> ローカルで問い合わせフォームから実際にメールを送るには SES の設定が必要です。[SES メール機能ガイド](docs/20_development/ses-email-guide.ja.md#ローカル開発環境) を参照してください。
+
 ### Devcontainer を使用する場合（推奨）
 
 1. Docker Desktop または Rancher Desktop を起動
@@ -96,82 +103,55 @@ http://localhost:3000 でアプリケーションにアクセスできます。
 
 ---
 
-## ☁️ AWS へのデプロイ
+## ☁️ デプロイ
 
 ### デプロイフロー
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│  Step 1: CDKデプロイ（ローカル or GitHub Actions）               │
-│          → AWS 上に Amplify サービスを作成                       │
-│          → GitHub リポジトリと連携設定                           │
+│  Step 1: main にマージ（apps/web/**, packages/**, Dockerfile,    │
+│          firebase.json, deploy-gcp.yml, pnpm-lock.yaml）         │
+│          → .github/workflows/deploy-gcp.yml が起動               │
 └─────────────────────────────────────────────────────────────────┘
                               ↓
 ┌─────────────────────────────────────────────────────────────────┐
-│  Step 2: main ブランチにマージ                                   │
-│          → Amplify が変更を自動検知                              │
-│          → amplify.yml に従ってビルド・デプロイ                  │
+│  Step 2: GitHub Actions OIDC → GCP Workload Identity Federation │
+│          → docker build → Artifact Registry へ push              │
+│          → gcloud run deploy（Cloud Run service `tarophotos`）   │
+└─────────────────────────────────────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────────┐
+│  Step 3: firebase deploy --only hosting:tarophotos-web          │
+│          → Firebase Hosting が全リクエストを Cloud Run へ rewrite │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-### パターン1: ローカルからのデプロイ（初回セットアップ推奨）
+- 認証は鍵レス（Workload Identity Federation）のため、GitHub Secrets やクラウドの鍵は不要です。
+- 手動で再デプロイ: Actions → **Deploy to GCP (Cloud Run + Firebase Hosting)** → Run workflow
+- `ci.yml` はチェック専用（lint / 型チェック / テスト / ビルド / e2e / cdk synth）で、デプロイジョブはありません。
 
-`.env` ファイルを使用して簡単にデプロイできます。
-
-```bash
-# 1. 環境変数の設定
-cp infra/.env.example infra/.env
-# infra/.env を編集して AWS認証情報 と GITHUB_TOKEN を設定
-
-# 2. CDK デプロイ
-cd infra
-npx cdk deploy
-```
-
-### パターン2: GitHub Actions からの自動デプロイ
-
-1. GitHub Secrets に認証情報を設定（下記参照）
-2. `infra/` 配下のファイルを変更して `main` にマージ
-3. GitHub Actions が自動で CDK デプロイを実行
-
-詳細な手順は [デプロイ手順書](docs/30_operations/deployment.md) を参照してください。
+詳細な手順は [デプロイ手順書](docs/30_operations/deployment.ja.md) を参照してください。
 
 ---
 
-## 🔐 必要な環境変数・シークレット
+## 🔐 必要な環境変数
 
-### AWS Secrets Manager（必須）
+### GitHub repository variables（本番の実行時 env）
 
-| シークレット名 | 値 | 説明 |
-|--------------|-----|------|
-| `github/amplify-token` | `ghp_xxxxxxxx` | GitHub Personal Access Token |
+**Settings → Secrets and variables → Actions → Variables** に設定します（secrets ではなく *variables*）。`deploy-gcp.yml` が `--update-env-vars` で Cloud Run に配線します。
 
-**GitHub PAT に必要なスコープ:**
-- `repo` - リポジトリへのフルアクセス
-- `admin:repo_hook` - Webhook 設定用
+| 変数名 | 説明 |
+|-------|------|
+| `SES_REGION` | SES の AWS リージョン |
+| `SES_FROM_EMAIL` | 送信元アドレス（SES で検証済みであること） |
+| `SES_TO_EMAIL` | 問い合わせ通知の送信先 |
+| `SES_AWS_ROLE_ARN` | web identity federation で引き受ける AWS ロール（`tarophotos-ses-federation`） |
 
-### ローカル環境変数（パターン1使用時）
+> ⚠️ `SES_AWS_ROLE_ARN` が未設定だとデプロイは **fail-closed で止まります**（静的キーへの無言フォールバックはしません）。
 
-| 環境変数 | 値の例 | 説明 |
-|---------|-------|------|
-| `AWS_ACCESS_KEY_ID` | `AKIAXXXXXXXX` | IAM アクセスキー ID |
-| `AWS_SECRET_ACCESS_KEY` | `xxxxxxxx` | IAM シークレットアクセスキー |
-| `AWS_DEFAULT_REGION` | `ap-northeast-1` | デフォルトリージョン |
+### ローカル環境変数
 
-### GitHub Secrets（パターン2使用時）
-
-#### 方式A: OIDC認証（推奨）
-
-| Secret 名 | 値の例 |
-|----------|-------|
-| `AWS_ROLE_ARN` | `arn:aws:iam::123456789012:role/GitHubActionsRole` |
-
-#### 方式B: アクセスキー認証
-
-| Secret 名 | 値の例 |
-|----------|-------|
-| `AWS_ACCESS_KEY_ID` | `AKIAXXXXXXXX` |
-| `AWS_SECRET_ACCESS_KEY` | `xxxxxxxx` |
+[SES メール機能ガイド](docs/20_development/ses-email-guide.ja.md#ローカル開発環境) を参照してください。
 
 ---
 
@@ -187,11 +167,13 @@ npx cdk deploy
 
 ### CDK コマンド（infra/）
 
+`infra/` は SES ID（`SesStack`）の定義のみで、CI からは**適用しません**。
+
 | コマンド | 説明 |
 |---------|------|
-| `npx cdk diff` | 変更内容を確認 |
-| `npx cdk deploy` | スタックをデプロイ |
-| `npx cdk synth` | CloudFormation テンプレート生成 |
+| `npx cdk synth` | CloudFormation テンプレート生成（CI でも実行） |
+
+> ⚠️ `npx cdk deploy` は実行しないでください。stack 名 `SesStack` は同一 AWS アカウント・リージョンの i-willink.com の stack（同サイトの本番 SES ID を保持）と衝突します（`.github/workflows/ci.yml` 末尾のコメント参照）。名前の衝突を解消するまで deploy しません。
 
 ---
 
@@ -199,17 +181,20 @@ npx cdk deploy
 
 | ドキュメント | 対象者 | 説明 |
 |------------|-------|------|
-| [ドキュメント管理ルール](docs/00_project/DOCUMENT_RULES.md) | 開発者 | ドキュメントの書き方 |
-| [開発環境セットアップ](docs/20_development/getting-started.md) | 開発者 | 開発環境の構築手順 |
-| [Devcontainer 利用ガイド](docs/20_development/devcontainer-guide.md) | 開発者 | Docker開発環境の利用方法 |
-| [SES メール機能ガイド](docs/20_development/ses-email-guide.md) | 開発者 | メール送信機能の使い方 |
-| [デプロイ手順書](docs/30_operations/deployment.md) | 運用者 | AWS へのデプロイ手順 |
+| [HANDOFF](docs/HANDOFF.md) | 全員 | 本番の現行構成の要約 |
+| [ドキュメント管理ルール](docs/00_project/DOCUMENT_RULES.ja.md) | 開発者 | ドキュメントの書き方 |
+| [開発環境セットアップ](docs/20_development/getting-started.ja.md) | 開発者 | 開発環境の構築手順 |
+| [Devcontainer 利用ガイド](docs/20_development/devcontainer-guide.ja.md) | 開発者 | Docker開発環境の利用方法 |
+| [SES メール機能ガイド](docs/20_development/ses-email-guide.ja.md) | 開発者 | 問い合わせフォームのメール送信 |
+| [デプロイ手順書](docs/30_operations/deployment.ja.md) | 運用者 | Cloud Run + Firebase Hosting へのデプロイ |
+| [CI/CD パイプライン仕様](docs/30_operations/ci-cd-pipeline.md) | 運用者 | `ci.yml` / `deploy-gcp.yml` の仕様（英語） |
+| [検証ガイド](docs/30_operations/verification-guide.ja.md) | 運用者 | デプロイ後の動作確認 |
 
 ---
 
 ## 🤝 コントリビューション
 
-コントリビューションを歓迎します！詳細は [CONTRIBUTING.md](CONTRIBUTING.md) をご覧ください。
+コントリビューションを歓迎します！詳細は [CONTRIBUTING.ja.md](CONTRIBUTING.ja.md) をご覧ください。
 
 ---
 

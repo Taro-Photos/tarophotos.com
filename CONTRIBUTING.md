@@ -2,7 +2,7 @@
 
 [日本語 (Japanese)](CONTRIBUTING.ja.md)
 
-Welcome to contribute to Next.js Amplify Starter Kit!
+Welcome to contribute to tarophotos.com!
 
 ## Development Flow
 
@@ -11,6 +11,8 @@ Welcome to contribute to Next.js Amplify Starter Kit!
 3. Commit your changes (`git commit -m 'feat: Add amazing feature'`)
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Create a Pull Request
+
+> **Note**: Merging to `main` deploys production. When `apps/web/**`, `packages/**`, `Dockerfile`, `firebase.json` or `pnpm-lock.yaml` change, `.github/workflows/deploy-gcp.yml` deploys to Cloud Run + Firebase Hosting (see the [Deployment Guide](docs/30_operations/deployment.md)).
 
 ## Commit Message Convention
 
@@ -29,7 +31,7 @@ We follow the [Conventional Commits](https://www.conventionalcommits.org/) speci
 ## Code Style
 
 - Follow the ESLint + Prettier settings.
-- Run `pnpm lint` and `pnpm format` before creating a PR.
+- Run `pnpm lint`, `pnpm test` and `pnpm format` before creating a PR.
 
 ## Questions & Support
 

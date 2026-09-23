@@ -2,133 +2,129 @@
 
 [English](verification-guide.md)
 
-このガイドでは、プロジェクトをフォークした環境で、実装されたすべてのデプロイパターンを検証する手順を説明します。
+このガイドでは、変更が **Cloud Run + Firebase Hosting** の本番に正しく反映されたかを確認する手順を説明します（構成は [デプロイ手順](deployment.ja.md) を参照）。
+
+> **最終更新**: 2026-09-23
+>
+> 以下のコマンドはすべて読み取り専用です。副作用があるのはシナリオ6（実際にメールが送信される）のみです。
 
 ## 📋 前提条件
 
-1. **リポジトリのフォーク**
-   - GitHub 上で `next-amplify-starter-kit` を自分のアカウントにフォークします。
-   - ローカルにクローンします:
-     ```bash
-     git clone https://github.com/YOUR_USER/next-amplify-starter-kit.git
-     cd next-amplify-starter-kit
-     ```
+1. **ツール**
+   - `curl` と `dig`
+   - `Taro-Photos/tarophotos.com` にアクセスできる [GitHub CLI](https://cli.github.com/)（`gh`）（シナリオ1〜2。Web UI でも可）
+   - プロジェクト `iwillink-web` の読み取り権限を持つ [gcloud CLI](https://cloud.google.com/sdk/gcloud)（シナリオ5〜6のみ）
 
-2. **AWS 認証情報**
-   - 検証用の AWS アカウントを用意してください。
-   - 必要な権限: `AdministratorAccess` (推奨)
-
-3. **GitHub Token**
-   - `repo`, `admin:repo_hook` スコープを持つ PAT を取得してください。
+2. **前提知識**
+   - 本番へのデプロイは `main` から `.github/workflows/deploy-gcp.yml` 経由でのみ行われます。ステージング環境やローカルからのデプロイ経路はありません。
 
 ---
 
-## ✅ シナリオ1: ローカルデプロイ（環境変数モード）
-**目的**: 最も手軽に、コストをかけずにデプロイできることを確認する。
+## ✅ シナリオ1: Pull Request の CI チェック
+**目的**: マージ前に変更が `ci.yml` を通過することを確認する。
 
-1. **`.env` ファイルの作成**
+1. **PR のチェックを確認**
    ```bash
-   cp infra/.env.example infra/.env
+   gh pr checks <PR 番号>
    ```
-2. **`.env` の編集**
-   ```properties
-   # infra/.env
-   AWS_ACCESS_KEY_ID=AKIA...
-   AWS_SECRET_ACCESS_KEY=...
-   GITHUB_TOKEN=ghp_...
-   USE_SECRETS_MANAGER=false  # 重要
-   ```
-3. **デプロイ実行**
-   ```bash
-   cd infra
-   npx cdk deploy -c repositoryOwner=YOUR_USER -c repositoryName=next-amplify-starter-kit
-   ```
-   > **Note**: フォークしたリポジトリ名を `-c` オプションまたは `.env` で指定してください。
-
-4. **確認**
-   - CloudFormation スタックが作成されること。
-   - Amplify コンソールでアプリが作成され、ビルドが開始されること。
+2. **確認**
+   - `apps/**`・`packages/**`・`package.json`・`pnpm-lock.yaml` に変更がある場合、`Lint & Type Check`・`Test`・`Build`・`E2E (responsive)` が成功している。
+   - `infra/**` に変更がある場合、`CDK Check`（`cdk synth`）が成功している。
 
 ---
 
-## ✅ シナリオ2: ローカルデプロイ（Secrets Managerモード）
-**目的**: 本番推奨構成（Secrets Manager利用）を確認する。
+## ✅ シナリオ2: デプロイワークフローの成功
+**目的**: マージに対して `deploy-gcp.yml` が実行され、全ステップが成功したことを確認する。
 
-1. **Secrets Manager への保存**
+1. **実行を探す**
    ```bash
-   aws secretsmanager create-secret \
-     --name github/amplify-token \
-     --secret-string "ghp_xxxxxxxx"
+   gh run list --workflow=deploy-gcp.yml --limit 5
    ```
-2. **`.env` の編集**
-   ```properties
-   # infra/.env
-   USE_SECRETS_MANAGER=true
-   # GITHUB_TOKEN は不要（コメントアウト可）
-   ```
-3. **デプロイ実行**
+2. **内容を確認**
    ```bash
-   cd infra
-   npx cdk deploy -c repositoryOwner=YOUR_USER -c repositoryName=next-amplify-starter-kit
+   gh run view <run id>
    ```
+3. **確認**
+   - 実行のコミットが `main` のマージコミットと一致している。
+   - `Verify Cloud Run revision serves` と `Verify Hosting front` が両方成功している（HTTP 200 かつページに `ds-wrap` を含む）。
+
+> マージがトリガー対象のパス（`apps/web/**`・`packages/**`・`Dockerfile`・`firebase.json`・`deploy-gcp.yml`・`pnpm-lock.yaml`）に触れていない場合、実行されないのが正常です。
 
 ---
 
-## ✅ シナリオ3: GitHub Actions (OIDC + Secrets Manager)
-**目的**: 推奨される CI/CD 構成を確認する。
+## ✅ シナリオ3: 本番の応答
+**目的**: 公開ドメインが Firebase Hosting 経由で新しいビルドを配信していることを確認する。
 
-1. **Secrets Manager**
-   - シナリオ2で作成済みであればスキップ可。
-
-2. **AWS OIDC 設定**
-   - IAM プロバイダーとロールを作成し、GitHub Actions からのアクセスを許可します。
-   - 詳細は `deployment.md` 参照。
-
-3. **GitHub Secrets 設定**
-   - リポジトリの Settings > Secrets and variables > Actions
-   - `AWS_ROLE_ARN`: 作成した IAM ロールの ARN
-
-4. **デプロイ実行（手動トリガー）**
-   - GitHub Actions タブ > "Deploy Infrastructure"
-   - "Run workflow" をクリック
-   - Environment: `production`
-   - Use Secrets Manager: `true`
+1. **ステータスコードを確認**
+   ```bash
+   curl -sI https://tarophotos.com/ | head -n 1
+   curl -sI https://www.tarophotos.com/ | head -n 1
+   curl -sI https://tarophotos-web.web.app/ | head -n 1
+   ```
+2. **内容を確認**
+   ```bash
+   curl -s "https://tarophotos.com/?cb=$(date +%s)" | grep -c 'ds-wrap'
+   ```
+3. **確認**
+   - 各ドメインがエラーなく応答し、ページに `ds-wrap` が含まれる（ワークフローと同じチェック）。
+   - リリースした変更がブラウザで見える（必要に応じてキャッシュ回避のクエリ文字列を付ける）。
 
 ---
 
-## ✅ シナリオ4: GitHub Actions (Access Key + 環境変数)
-**目的**: OIDC 未設定環境でのコスト削減 CI/CD を確認する。
+## ✅ シナリオ4: DNS が Firebase Hosting を向いている
+**目的**: Route53 のレコードが想定どおりであることを確認する。
 
-1. **GitHub Secrets 設定**
-   - `AWS_ACCESS_KEY_ID`: IAM ユーザーのキー
-   - `AWS_SECRET_ACCESS_KEY`: IAM ユーザーのシークレット
-   - `GH_PAT`: GitHub トークン
+```bash
+dig +short tarophotos.com A
+# 期待値: 199.36.158.100
 
-2. **GitHub Variables 設定**
-   - `AUTH_METHOD`: `ACCESS_KEY` (OIDC無効化のため明示的に設定推奨)
+dig +short www.tarophotos.com CNAME
+# 期待値: tarophotos-web.web.app.
+```
 
-3. **デプロイ実行（手動トリガー）**
-   - GitHub Actions タブ > "Deploy Infrastructure"
-   - "Run workflow" をクリック
-   - Use Secrets Manager: `false`
+---
+
+## ✅ シナリオ5: Cloud Run のリビジョンと実行時 env
+**目的**: 最新リビジョンが配信中で、SES の変数が配線されていることを確認する。
+
+1. **トラフィックを受けているリビジョンを確認**
+   ```bash
+   gcloud run services describe tarophotos \
+     --region=asia-northeast1 --project=iwillink-web \
+     --format='yaml(status.latestReadyRevisionName,status.traffic)'
+   ```
+   - 最新の Ready リビジョンがトラフィックの 100% を受けていること。古いリビジョンに固定されている場合（ロールバック後など）は [ロールバック](deployment.ja.md#ロールバック) を参照。
+
+2. **実行時 env を確認**
+   ```bash
+   gcloud run services describe tarophotos \
+     --region=asia-northeast1 --project=iwillink-web \
+     --format='yaml(spec.template.spec.containers[0].env)'
+   ```
+   - `SES_REGION`・`SES_FROM_EMAIL`・`SES_TO_EMAIL`・`SES_AWS_ROLE_ARN` が存在する。
+   - 静的な AWS キー（`SES_AWS_ACCESS_KEY_ID` / `SES_AWS_SECRET_ACCESS_KEY`）が存在しない。
+
+---
+
+## ✅ シナリオ6: 問い合わせフォームの疎通
+**目的**: 本番で鍵レスの SES 送信が動作することを確認する。
+
+> ⚠️ 実際にメールが送信されます: `SES_TO_EMAIL` への通知と、入力したアドレスへの自動返信。自分のアドレスを使ってください。
+
+1. **フォームを送信**
+   - https://tarophotos.com/contact を開き、数秒待ってから（3 秒未満の送信は静かに破棄される）必須項目を入力して送信。
+2. **ログを確認**
+   ```bash
+   gcloud logging read \
+     'resource.type="cloud_run_revision" AND resource.labels.service_name="tarophotos" AND textPayload:"[forms:contact]"' \
+     --project=iwillink-web --limit=10
+   ```
+3. **確認**
+   - フォームに成功表示が出て 2 通とも届き、ログに `[forms:contact] email sent to ...` と `[forms:contact] auto-response sent to ...` が出ている。
+   - 送信に失敗する場合は [SES メール機能ガイド - トラブルシューティング](../20_development/ses-email-guide.ja.md#-トラブルシューティング) を参照。
 
 ---
 
 ## 🧹 クリーンアップ手順
 
-検証が終わったら、無駄なコストが発生しないようにリソースを削除します。
-
-1. **Amplify アプリの削除**
-   ```bash
-   cd infra
-   npx cdk destroy
-   ```
-   または AWS コンソールから CloudFormation スタック (`AmplifyStack`) を削除。
-
-2. **Secrets Manager の削除**
-   ```bash
-   aws secretsmanager delete-secret --secret-id github/amplify-token --force-delete-without-recovery
-   ```
-
-3. **ユーザー/ロールの削除**
-   - 作成した IAM ユーザーや OIDC ロールを削除。
+これらの確認ではリソースを作成しないため、クリーンアップは不要です。必要に応じて受信したテストメールを削除してください。

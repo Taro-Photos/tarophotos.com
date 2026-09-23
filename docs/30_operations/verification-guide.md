@@ -2,133 +2,129 @@
 
 [日本語 (Japanese)](verification-guide.ja.md)
 
-This guide explains the procedure to verify all implemented deployment patterns in a forked environment.
+This guide explains how to verify that a change reached production correctly on **Cloud Run + Firebase Hosting** (see the [Deployment Guide](deployment.md) for the architecture).
+
+> **Last Updated**: 2026-09-23
+>
+> All commands below are read-only. The only step with a side effect is Scenario 6 (it sends real email).
 
 ## 📋 Prerequisites
 
-1. **Fork Repository**
-   - Fork `next-amplify-starter-kit` to your account on GitHub.
-   - Clone to local:
-     ```bash
-     git clone https://github.com/YOUR_USER/next-amplify-starter-kit.git
-     cd next-amplify-starter-kit
-     ```
+1. **Tools**
+   - `curl` and `dig`
+   - [GitHub CLI](https://cli.github.com/) (`gh`) authenticated for `Taro-Photos/tarophotos.com` (Scenarios 1–2; the web UI works too)
+   - [gcloud CLI](https://cloud.google.com/sdk/gcloud) with read access to project `iwillink-web` (Scenarios 5–6 only)
 
-2. **AWS Credentials**
-   - Prepare an AWS account for verification.
-   - Required permissions: `AdministratorAccess` (Recommended)
-
-3. **GitHub Token**
-   - Obtain a PAT with `repo`, `admin:repo_hook` scopes.
+2. **Context**
+   - Production deploys run only from `main` via `.github/workflows/deploy-gcp.yml`. There is no staging environment and no local deploy path.
 
 ---
 
-## ✅ Scenario 1: Local Deployment (Env Var Mode)
-**Objective**: Verify easiest deployment without cost.
+## ✅ Scenario 1: CI Checks on the Pull Request
+**Objective**: Confirm the change passes `ci.yml` before merging.
 
-1. **Create `.env` file**
+1. **Check the PR checks**
    ```bash
-   cp infra/.env.example infra/.env
+   gh pr checks <PR number>
    ```
-2. **Edit `.env`**
-   ```properties
-   # infra/.env
-   AWS_ACCESS_KEY_ID=AKIA...
-   AWS_SECRET_ACCESS_KEY=...
-   GITHUB_TOKEN=ghp_...
-   USE_SECRETS_MANAGER=false  # Important
-   ```
-3. **Execute Deploy**
-   ```bash
-   cd infra
-   npx cdk deploy -c repositoryOwner=YOUR_USER -c repositoryName=next-amplify-starter-kit
-   ```
-   > **Note**: Specify forked repository name via `-c` option or `.env`.
-
-4. **Verify**
-   - CloudFormation stack is created.
-   - App is created in Amplify Console and build starts.
+2. **Verify**
+   - `Lint & Type Check`, `Test`, `Build` and `E2E (responsive)` pass when `apps/**`, `packages/**`, `package.json` or `pnpm-lock.yaml` changed.
+   - `CDK Check` (`cdk synth`) passes when `infra/**` changed.
 
 ---
 
-## ✅ Scenario 2: Local Deployment (Secrets Manager Mode)
-**Objective**: Verify production recommended configuration (using Secrets Manager).
+## ✅ Scenario 2: Deploy Workflow Succeeded
+**Objective**: Confirm `deploy-gcp.yml` ran for the merge and every step passed.
 
-1. **Save to Secrets Manager**
+1. **Find the run**
    ```bash
-   aws secretsmanager create-secret \
-     --name github/amplify-token \
-     --secret-string "ghp_xxxxxxxx"
+   gh run list --workflow=deploy-gcp.yml --limit 5
    ```
-2. **Edit `.env`**
-   ```properties
-   # infra/.env
-   USE_SECRETS_MANAGER=true
-   # GITHUB_TOKEN is not needed (can be commented out)
-   ```
-3. **Execute Deploy**
+2. **Inspect it**
    ```bash
-   cd infra
-   npx cdk deploy -c repositoryOwner=YOUR_USER -c repositoryName=next-amplify-starter-kit
+   gh run view <run id>
    ```
+3. **Verify**
+   - The run's commit matches the merge commit on `main`.
+   - `Verify Cloud Run revision serves` and `Verify Hosting front` both passed (HTTP 200 and the page contains `ds-wrap`).
+
+> If the merge did not touch a trigger path (`apps/web/**`, `packages/**`, `Dockerfile`, `firebase.json`, `deploy-gcp.yml`, `pnpm-lock.yaml`), no run is expected.
 
 ---
 
-## ✅ Scenario 3: GitHub Actions (OIDC + Secrets Manager)
-**Objective**: Verify recommended CI/CD configuration.
+## ✅ Scenario 3: Production Responds
+**Objective**: Confirm the public domains serve the new build through Firebase Hosting.
 
-1. **Secrets Manager**
-   - Skippable if created in Scenario 2.
-
-2. **AWS OIDC Setup**
-   - Create IAM provider and role, allow access from GitHub Actions.
-   - See `deployment.md` for details.
-
-3. **GitHub Secrets Setup**
-   - Repository Settings > Secrets and variables > Actions
-   - `AWS_ROLE_ARN`: ARN of created IAM Role
-
-4. **Execute Deploy (Manual Trigger)**
-   - GitHub Actions tab > "Deploy Infrastructure"
-   - Click "Run workflow"
-   - Environment: `production`
-   - Use Secrets Manager: `true`
+1. **Check the status codes**
+   ```bash
+   curl -sI https://tarophotos.com/ | head -n 1
+   curl -sI https://www.tarophotos.com/ | head -n 1
+   curl -sI https://tarophotos-web.web.app/ | head -n 1
+   ```
+2. **Check the content**
+   ```bash
+   curl -s "https://tarophotos.com/?cb=$(date +%s)" | grep -c 'ds-wrap'
+   ```
+3. **Verify**
+   - Each domain responds without error, and the page contains `ds-wrap` (the same check the workflow uses).
+   - The change you shipped is visible in a browser (use a cache-busting query string if needed).
 
 ---
 
-## ✅ Scenario 4: GitHub Actions (Access Key + Env Var)
-**Objective**: Verify cost-saving CI/CD configuration without OIDC.
+## ✅ Scenario 4: DNS Points to Firebase Hosting
+**Objective**: Confirm the Route53 records are as expected.
 
-1. **GitHub Secrets Setup**
-   - `AWS_ACCESS_KEY_ID`: IAM User Key
-   - `AWS_SECRET_ACCESS_KEY`: IAM User Secret
-   - `GH_PAT`: GitHub Token
+```bash
+dig +short tarophotos.com A
+# Expected: 199.36.158.100
 
-2. **GitHub Variables Setup**
-   - `AUTH_METHOD`: `ACCESS_KEY` (Recommended to set explicitly to disable OIDC)
+dig +short www.tarophotos.com CNAME
+# Expected: tarophotos-web.web.app.
+```
 
-3. **Execute Deploy (Manual Trigger)**
-   - GitHub Actions tab > "Deploy Infrastructure"
-   - Click "Run workflow"
-   - Use Secrets Manager: `false`
+---
+
+## ✅ Scenario 5: Cloud Run Revision and Runtime Env
+**Objective**: Confirm the latest revision is serving and the SES variables are wired.
+
+1. **Check which revision serves traffic**
+   ```bash
+   gcloud run services describe tarophotos \
+     --region=asia-northeast1 --project=iwillink-web \
+     --format='yaml(status.latestReadyRevisionName,status.traffic)'
+   ```
+   - The latest ready revision should receive 100% of traffic. If traffic is pinned to an older revision (e.g. after a rollback), see [Rollback](deployment.md#rollback).
+
+2. **Check the runtime env**
+   ```bash
+   gcloud run services describe tarophotos \
+     --region=asia-northeast1 --project=iwillink-web \
+     --format='yaml(spec.template.spec.containers[0].env)'
+   ```
+   - `SES_REGION`, `SES_FROM_EMAIL`, `SES_TO_EMAIL` and `SES_AWS_ROLE_ARN` are present.
+   - No static AWS keys (`SES_AWS_ACCESS_KEY_ID` / `SES_AWS_SECRET_ACCESS_KEY`) are present.
+
+---
+
+## ✅ Scenario 6: Contact Form End-to-End
+**Objective**: Confirm keyless SES sending works in production.
+
+> ⚠️ This sends real email: a notification to `SES_TO_EMAIL` and an auto-response to the address you enter. Use your own address.
+
+1. **Submit the form**
+   - Open https://tarophotos.com/contact, wait a few seconds (submissions faster than 3 s are silently dropped), fill in the required fields and submit.
+2. **Check the logs**
+   ```bash
+   gcloud logging read \
+     'resource.type="cloud_run_revision" AND resource.labels.service_name="tarophotos" AND textPayload:"[forms:contact]"' \
+     --project=iwillink-web --limit=10
+   ```
+3. **Verify**
+   - The form shows success, both emails arrive, and the logs contain `[forms:contact] email sent to ...` and `[forms:contact] auto-response sent to ...`.
+   - If sending fails, see [SES Email Guide - Troubleshooting](../20_development/ses-email-guide.md#-troubleshooting).
 
 ---
 
 ## 🧹 Cleanup Procedure
 
-After verification, delete resources to avoid unnecessary costs.
-
-1. **Delete Amplify App**
-   ```bash
-   cd infra
-   npx cdk destroy
-   ```
-   Or delete CloudFormation stack (`AmplifyStack`) from AWS Console.
-
-2. **Delete Secrets Manager**
-   ```bash
-   aws secretsmanager delete-secret --secret-id github/amplify-token --force-delete-without-recovery
-   ```
-
-3. **Delete User/Role**
-   - Delete created IAM User or OIDC Role.
+No resources are created by these checks, so there is nothing to clean up. Delete any test emails you received if needed.

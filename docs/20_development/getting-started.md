@@ -2,19 +2,19 @@
 
 [日本語 (Japanese)](getting-started.ja.md)
 
-> **Last Updated**: 2025-12-16
+> **Last Updated**: 2026-09-23
 > **Status**: Approved
 
 ## Overview
 
-This guide explains how to set up the development environment for Next.js Amplify Starter Kit.
+This guide explains how to set up the development environment for tarophotos.com.
 
 ## Prerequisites
 
 | Tool | Minimum Version | Recommended |
 |------|-----------------|-------------|
-| Node.js | 18.17.0 | 20.x LTS |
-| pnpm | 8.0.0 | 9.x |
+| Node.js | 18.17.0 | 20.x LTS (same as CI and the Docker image) |
+| pnpm | 8.0.0 | 10.x (`packageManager` in `package.json`) |
 | Git | 2.30.0 | Latest |
 
 ## Setup Procedures
@@ -22,8 +22,8 @@ This guide explains how to set up the development environment for Next.js Amplif
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/i-Willink-Inc/next-amplify-starter-kit.git
-cd next-amplify-starter-kit
+git clone https://github.com/Taro-Photos/tarophotos.com.git
+cd tarophotos.com
 ```
 
 ### 2. Install Dependencies
@@ -40,6 +40,8 @@ pnpm dev
 
 You can access the application at http://localhost:3000.
 
+> To send mail from the contact form locally, set up `apps/web/.env.local` as described in the [SES Email Guide](./ses-email-guide.md#local-development-environment). Without `SES_FROM_EMAIL`, `/api/contact` returns 500 ("Email delivery is not configured.").
+
 ## Build
 
 ```bash
@@ -51,6 +53,12 @@ pnpm build
 ```bash
 # Lint
 pnpm lint
+
+# Unit tests (Vitest)
+pnpm test
+
+# E2E (Playwright, apps/web/tests/e2e)
+pnpm --filter @repo/web exec playwright test
 
 # Format
 pnpm format
@@ -66,14 +74,16 @@ You can use a unified development environment using Docker.
 
 For details, refer to [devcontainer-guide.md](./devcontainer-guide.md).
 
-## Infrastructure (AWS CDK)
+## Hosting & Infrastructure
 
-This project manages infrastructure using AWS CDK.
-CDK code is included in the `infra/` directory.
+Production runs on **Google Cloud Run + Firebase Hosting**. Merging to `main` deploys automatically via `.github/workflows/deploy-gcp.yml`; there is nothing to deploy from your machine.
 
-For AWS deployment and infrastructure configuration, refer to:
+- The GCP resources (Cloud Run / Artifact Registry / Firebase Hosting / Workload Identity Federation) are defined outside this repository (willink-infra).
+- `infra/` contains only the AWS CDK definition of the SES identity (`SesStack`). It is not applied from CI.
+
+For details, refer to:
 - [Deployment Guide](../30_operations/deployment.md)
-- [README.md - Deploy to AWS](../../README.md#deploy-to-aws)
+- [README.md - Deployment](../../README.md#-deployment)
 
 ## Next Steps
 

@@ -2,7 +2,7 @@
 
 [English](CONTRIBUTING.md)
 
-Next.js Amplify Starter Kit へのコントリビューションを歓迎します！
+tarophotos.com へのコントリビューションを歓迎します！
 
 ## 開発の流れ
 
@@ -11,6 +11,8 @@ Next.js Amplify Starter Kit へのコントリビューションを歓迎しま�
 3. 変更をコミット (`git commit -m 'feat: Add amazing feature'`)
 4. ブランチをプッシュ (`git push origin feature/amazing-feature`)
 5. Pull Request を作成
+
+> **Note**: `main` へのマージは本番デプロイになります。`apps/web/**`・`packages/**`・`Dockerfile`・`firebase.json`・`pnpm-lock.yaml` に変更があると、`.github/workflows/deploy-gcp.yml` が Cloud Run + Firebase Hosting へデプロイします（[デプロイ手順書](docs/30_operations/deployment.ja.md) 参照）。
 
 ## コミットメッセージ規約
 
@@ -29,7 +31,7 @@ Next.js Amplify Starter Kit へのコントリビューションを歓迎しま�
 ## コードスタイル
 
 - ESLint + Prettier の設定に従う
-- `pnpm lint` と `pnpm format` を実行してから PR 作成
+- `pnpm lint`・`pnpm test`・`pnpm format` を実行してから PR 作成
 
 ## 質問・サポート
 

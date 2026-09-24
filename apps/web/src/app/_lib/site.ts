@@ -1,4 +1,6 @@
-const DEFAULT_SITE_URL = "https://taro.photos";
+// 本番のドメイン。以前の既定値 "https://taro.photos" は別の写真家（Wix）のドメインで、
+// canonical / OGP / sitemap / JSON-LD がすべてそちらを指していた（2026-09-24 実測）。
+const DEFAULT_SITE_URL = "https://tarophotos.com";
 
 /**
  * Resolves the canonical site URL, stripping any trailing slash so downstream consumers

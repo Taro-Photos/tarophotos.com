@@ -1,8 +1,6 @@
 export type SocialAccountKey =
   | "instagram"
   | "instagramMonochrome"
-  | "note"
-  | "youtube"
   | "x";
 
 export type SocialAccount = {
@@ -25,18 +23,6 @@ const socialAccountRegistry: Record<SocialAccountKey, SocialAccount> = {
     href: "https://www.instagram.com/taro.monochrome",
     username: "@taro.monochrome",
   },
-  note: {
-    key: "note",
-    label: "note",
-    href: "https://note.com/taro_whitey",
-    username: "note.com/taro_whitey",
-  },
-  youtube: {
-    key: "youtube",
-    label: "YouTube",
-    href: "https://www.youtube.com/@tarophotos",
-    username: "@tarophotos",
-  },
   x: {
     key: "x",
     label: "X",
@@ -45,18 +31,15 @@ const socialAccountRegistry: Record<SocialAccountKey, SocialAccount> = {
   },
 };
 
+// note.com/taro_whitey と youtube.com/@tarophotos は 404（2026-09-24 実測）なので載せない。
 const primarySocialKeys: SocialAccountKey[] = [
   "instagram",
   "instagramMonochrome",
-  "note",
-  "youtube",
 ];
 
 const structuredDataSocialKeys: SocialAccountKey[] = [
   "instagram",
   "instagramMonochrome",
-  "note",
-  "youtube",
   "x",
 ];
 

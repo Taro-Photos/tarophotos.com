@@ -1,3 +1,4 @@
+import { getSiteUrl } from "../_lib/site";
 import { primaryContactEmail } from "./contact";
 
 export const legalPage = {
@@ -85,7 +86,7 @@ export const tokushoFields: Array<{ label: string; value: string }> = [
   { label: "運営統括責任者", value: "白井 悠太郎" },
   { label: "所在地", value: "東京都渋谷区（詳細住所はご請求時に開示いたします）" },
   { label: "連絡先", value: legalPage.contactEmail },
-  { label: "販売URL", value: "https://taro.photos" },
+  { label: "販売URL", value: getSiteUrl() },
   { label: "商品代金以外の必要料金", value: "振込手数料、交通費、許可申請費等の実費" },
   { label: "引き渡し時期", value: "撮影内容に応じたスケジュールで納品（事前打合せで確定）" },
   { label: "お支払い方法", value: "銀行振込（請求書発行日から30日以内）" },

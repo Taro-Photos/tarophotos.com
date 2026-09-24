@@ -2,7 +2,7 @@
 
 ## 環境変数の設定
 - 本番・ステージング・ローカルそれぞれで `NEXT_PUBLIC_SITE_URL` を設定してください。
-  - 例: `.env.local` に `NEXT_PUBLIC_SITE_URL=https://taro.photos` を記載。
+  - 例: `.env.local` に `NEXT_PUBLIC_SITE_URL=https://tarophotos.com` を記載。
   - 環境変数が未設定の場合は `https://taro.photos` でフォールバックします。
 - Vercel などのホスティングでは環境ごとの Environment Variables セクションに同値を登録します。
 

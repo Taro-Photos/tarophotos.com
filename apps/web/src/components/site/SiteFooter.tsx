@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { instagramPrimaryAccount } from "@/app/_content/socials";
 import styles from "./SiteFooter.module.css";
 
 export function SiteFooter() {
@@ -22,7 +23,7 @@ export function SiteFooter() {
                 </span>
               </p>
               <div className={styles.social}>
-                <a href="https://www.instagram.com/" target="_blank" rel="noreferrer">
+                <a href={instagramPrimaryAccount.href} target="_blank" rel="noreferrer">
                   Instagram
                 </a>
                 <Link href="/works">Index</Link>

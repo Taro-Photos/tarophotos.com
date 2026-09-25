@@ -2,36 +2,31 @@
 
 [English](deployment.md)
 
-> **最終更新**: 2025-12-16  
-> **ステータス**: ⚠️ **本番の実態と乖離あり（2026-07-25 時点）**
->
-> **本番は AWS Amplify ではなく Google Cloud Run + Firebase Hosting で稼働している**（2026-07-25 切替済み）。本書の Amplify / CDK / Secrets Manager の手順は**ロールバック用に残している旧経路**の説明であり、通常のデプロイには使わない。現行のデプロイは `.github/workflows/deploy-gcp.yml`。→ [docs/HANDOFF.md](../HANDOFF.md)
->
-> 本書の全面改訂は Amplify app 削除（2026-08-08 予定）と同時に行う。
+> **最終更新**: 2026-09-23  
+> **ステータス**: Approved
 
 ## 概要
 
-このプロジェクトでは、AWS Amplify を使用して Next.js アプリケーションをホスティングします。
-デプロイ方法は **ローカルから手動** と **GitHub Actions から自動** の2パターンに対応しています。
+このプロジェクトでは、**Firebase Hosting** を前段に置いた **Google Cloud Run** で Next.js アプリケーションをホスティングします。
+デプロイは GitHub Actions（`.github/workflows/deploy-gcp.yml`）による鍵レス認証で完全に自動化されており、手動で再実行することもできます。
+パイプラインの詳細は [CI/CD パイプライン仕様](ci-cd-pipeline.md)（英語）を参照してください。
+
+> 経緯: 本番は 2026-07-25 に AWS Amplify から Cloud Run + Firebase Hosting へ切り替え、Amplify app は 2026-09-01 に削除済み。Amplify はロールバック先として存在しません。
 
 ---
 
-## GitHub トークンの管理方法
+## 構成
 
-| 方法 | 推奨度 | セキュリティ | コスト |
-|------|-------|-------------|-------|
-| **Secrets Manager（デフォルト）** | ⭐ 推奨 | ◎ 高い | 月額約$0.40 |
-| 環境変数 | 開発用 | ○ 中程度 | 無料 |
+| 層 | 実体 |
+|---|---|
+| ホスティング | Firebase Hosting site `tarophotos-web`（`firebase.json` の rewrite で全リクエストを Cloud Run へ） |
+| アプリ | Cloud Run service `tarophotos`（`asia-northeast1`・`Dockerfile` でビルドする Next.js standalone コンテナ） |
+| コンテナ | Artifact Registry `asia-northeast1-docker.pkg.dev/iwillink-web/web/tarophotos`（コミット SHA でタグ付け） |
+| デプロイ | `.github/workflows/deploy-gcp.yml`（GitHub Actions OIDC → GCP Workload Identity Federation） |
+| 実行時 env | GitHub repository **variables** → `gcloud run deploy --update-env-vars` |
+| DNS | Route53（apex A `199.36.158.100` / www CNAME `tarophotos-web.web.app`） |
 
-### 切り替え方法
-
-```bash
-# デフォルト: Secrets Manager を使用（推奨）
-npx cdk deploy
-
-# コスト削減: 環境変数を使用
-USE_SECRETS_MANAGER=false GITHUB_TOKEN=ghp_xxx npx cdk deploy
-```
+GCP 側のリソース（プロジェクト `iwillink-web`・サービスアカウント・WIF プロバイダ等）はこのリポジトリではなく [willink-infra](https://github.com/i-Willink-LLC/willink-infra)（`tarophotos.tf`）で管理しています。
 
 ---
 
@@ -39,179 +34,180 @@ USE_SECRETS_MANAGER=false GITHUB_TOKEN=ghp_xxx npx cdk deploy
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│  Step 1: CDKデプロイ（ローカル or GitHub Actions）               │
-│          → AWS 上に Amplify サービスを作成                       │
-│          → GitHub リポジトリと連携設定                           │
+│  Step 1: main ブランチにマージ                                   │
+│          → deploy-gcp.yml が起動（対象パスは下記）                │
 └─────────────────────────────────────────────────────────────────┘
                               ↓
 ┌─────────────────────────────────────────────────────────────────┐
-│  Step 2: main ブランチにマージ                                   │
-│          → Amplify が変更を自動検知                              │
-│          → amplify.yml に従ってビルド・デプロイ                  │
+│  Step 2: GCP 認証（WIF・鍵レス）                                 │
+│          → docker build → Artifact Registry へ push              │
+└─────────────────────────────────────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────────┐
+│  Step 3: gcloud run deploy tarophotos（実行時 env を配線）       │
+│          → Cloud Run の URL が 200 を返すことを検証              │
+└─────────────────────────────────────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────────┐
+│  Step 4: firebase deploy --only hosting:tarophotos-web          │
+│          → https://tarophotos-web.web.app が 200 を返すことを検証 │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 事前準備
+## 自動デプロイ
 
-### 1. GitHub Personal Access Token (PAT) の作成
+### トリガー
 
-1. GitHub → Settings → Developer settings → Personal access tokens → Tokens (classic)
-2. 「Generate new token」をクリック
-3. スコープを選択:
-   - `repo` (Full control of private repositories)
-   - `admin:repo_hook` (Full control of repository hooks)
-4. トークンをコピーして安全に保存
+`main` への push のうち、以下のいずれかのパスに変更があるもの:
 
-### 2. GitHub トークンの保存（方法を選択）
+- `apps/web/**`
+- `packages/**`
+- `Dockerfile`
+- `firebase.json`
+- `.github/workflows/deploy-gcp.yml`
+- `pnpm-lock.yaml`
 
-#### 方法A: Secrets Manager（推奨）
+それ以外のパス（例: `docs/**`・`infra/**`）だけの変更ではデプロイ**されません**。実行は直列化されます（`concurrency: gcp-deploy-main`・キャンセルなし）。
 
-```bash
-aws secretsmanager create-secret \
-  --name github/amplify-token \
-  --secret-string "ghp_xxxxxxxxxxxxxxxx" \
-  --region ap-northeast-1 # リージョンの例
-```
+### ワークフローのステップ
 
-#### 方法B: 環境変数（コスト削減）
+| ステップ | 内容 |
+|---------|------|
+| Authenticate to GCP (WIF) | `google-github-actions/auth` で WIF プロバイダと `tarophotos-deployer@iwillink-web.iam.gserviceaccount.com` を使用 |
+| Build / Push image | リポジトリルートから `docker build`（`Dockerfile`）し、`$IMAGE:<コミット SHA>` を push |
+| Deploy to Cloud Run | `SES_AWS_ROLE_ARN` 未設定なら fail-closed で停止。その後 `gcloud run deploy`（設定は下記） |
+| Verify Cloud Run revision serves | サービス URL を `curl`: HTTP 200 かつページに `ds-wrap` を含む |
+| Deploy Firebase Hosting | `npx firebase-tools@14 deploy --only hosting:tarophotos-web --project iwillink-web` |
+| Verify Hosting front | `https://tarophotos-web.web.app/` を `curl`: HTTP 200 かつ `ds-wrap` を含む |
 
-```bash
-export GITHUB_TOKEN=ghp_xxxxxxxxxxxxxxxx
-export USE_SECRETS_MANAGER=false
-```
+### Cloud Run の設定（デプロイごとに指定）
 
----
-
-## パターン1: ローカルからのデプロイ
-
-### 1.1 AWS 認証の設定
-
-**方法A: .env ファイル（推奨）**
-
-`infra/.env` ファイルを作成し、必要な値を設定します（`.env.example` を参照）。
-
-```bash
-cp infra/.env.example infra/.env
-# infra/.env を編集して認証情報を設定
-```
-
-**方法B: 環境変数（直接エクスポート）**
-```bash
-export AWS_ACCESS_KEY_ID=xxxxx
-export AWS_SECRET_ACCESS_KEY=xxxxx
-export AWS_DEFAULT_REGION=ap-northeast-1 # リージョンの例
-```
-
-**方法C: AWS SSO**
-```bash
-aws sso login --profile your-profile
-export AWS_PROFILE=your-profile
-```
-
-### 1.2 CDK デプロイ
-
-```bash
-cd infra
-
-# .env ファイルがある場合は自動的に読み込まれます
-npx cdk deploy
-
-# または環境変数を使用（コスト削減）
-USE_SECRETS_MANAGER=false GITHUB_TOKEN=ghp_xxx npx cdk deploy
-```
+| 設定 | 値 |
+|-----|-----|
+| プロジェクト / リージョン | `iwillink-web` / `asia-northeast1` |
+| ランタイム SA | `tarophotos-runtime@iwillink-web.iam.gserviceaccount.com` |
+| 未認証アクセス | 許可（`--allow-unauthenticated`） |
+| ポート | `8080` |
+| CPU / メモリ | `1` / `512Mi` |
+| インスタンス数 | 最小 `0` / 最大 `2` |
 
 ---
 
-## パターン2: GitHub Actions からのデプロイ
+## 手動での再デプロイ
 
-### 2.1 GitHub Secrets の設定
+1. GitHub リポジトリの **Actions** タブを開く
+2. **Deploy to GCP (Cloud Run + Firebase Hosting)** を選択
+3. `main` で **Run workflow** をクリック
 
-| Secret 名 | 値 | 用途 |
-|----------|-----|------|
-| `GH_PAT` | `ghp_xxxxxxxx` | GitHub PAT（USE_SECRETS_MANAGER=false 時のみ必要） |
-| `AWS_ROLE_ARN` | `arn:aws:iam::xxx:role/xxx` | OIDC認証用 |
+GitHub CLI の場合:
 
-または:
+```bash
+gh workflow run deploy-gcp.yml --ref main
+```
 
-| Secret 名 | 値 |
-|----------|-----|
-| `AWS_ACCESS_KEY_ID` | アクセスキーID |
-| `AWS_SECRET_ACCESS_KEY` | シークレットキー |
-
-### 2.2 ワークフローのトリガー
-
-- **自動**: `infra/` または `amplify.yml` の変更が `main` にマージされた時
-- **手動**: Actions → Deploy Infrastructure → Run workflow
-  - `use_secrets_manager`: `true`（推奨）または `false`（コスト削減）
+repository variables を変更した後や、コード変更なしで再デプロイしたいときに使います。
 
 ---
 
-## 独自ドメインの設定（オプション）
+## 認証（鍵レス）
 
-Route53 に登録されているドメインを Amplify アプリに適用できます。
-設定すると、ルートドメイン (`example.com`) と `www` サブドメイン (`www.example.com`) が自動的に設定されます。
+GitHub Actions が OIDC トークンを取得し、GCP Workload Identity Federation で交換します。**GitHub Secrets・GitHub PAT・クラウドの鍵は一切使いません。**
 
-> **前提**: 同一 AWS アカウントの Route53 に Hosted Zone が作成されていること。
+| 項目 | 値 |
+|-----|-----|
+| WIF プロバイダ | `projects/626363975800/locations/global/workloadIdentityPools/github/providers/github-oidc` |
+| デプロイ用 SA | `tarophotos-deployer@iwillink-web.iam.gserviceaccount.com` |
+| デプロイ用 SA のロール | `artifactregistry.writer` / `run.admin` / `firebasehosting.admin` / ランタイム SA への actAs |
+| ワークフローの permissions | `contents: read` / `id-token: write` |
 
-### 設定方法
+---
 
-**ローカルデプロイ (.env)**
+## 実行時の環境変数
+
+GitHub の **repository variables**（Settings → Secrets and variables → Actions → **Variables**）に設定します。secrets ではありません。public リポジトリのため、値はワークフローに直書きしません。
+
+| 変数名 | 説明 |
+|-------|------|
+| `SES_REGION` | SES の AWS リージョン |
+| `SES_FROM_EMAIL` | 送信元アドレス（SES で検証済み） |
+| `SES_TO_EMAIL` | 問い合わせ通知の送信先 |
+| `SES_AWS_ROLE_ARN` | `AssumeRoleWithWebIdentity` で引き受ける AWS ロール `tarophotos-ses-federation` |
+
+- `SES_AWS_ROLE_ARN` が未設定だとデプロイは **fail-closed で止まる**ため、静的キーへ無言でフォールバックすることはありません。
+- `--update-env-vars` は列挙した変数だけを更新します。Cloud Run service に既にあるその他の env はデプロイを跨いで保持されます。
+- 変数を変更したら、ワークフローを手動実行（上記）して反映します。
+
+問い合わせフォームのメール送信の仕組みは [SES メール機能ガイド](../20_development/ses-email-guide.ja.md) を参照してください。
+
+---
+
+## 独自ドメイン / DNS
+
+`tarophotos.com` は Firebase Hosting（site `tarophotos-web`）で配信しています。DNS は Route53 のままです:
+
+| レコード | タイプ | 値 |
+|---------|-------|-----|
+| `tarophotos.com` | A | `199.36.158.100` |
+| `www.tarophotos.com` | CNAME | `tarophotos-web.web.app` |
+
+ゾーンの Cloud DNS への移行は移行計画の P6 で予定しています。
+
+---
+
+## ロールバック
+
+Amplify は存在しないため、ロールバックは Cloud Run / GitHub の中で行います。
+
+### 方法A: main で revert（推奨）
+
+問題のコミットを revert して `main` にマージします。`deploy-gcp.yml` が通常の経路で revert 後のコードをビルド・デプロイします。
+
+### 方法B: 以前の Cloud Run リビジョンにトラフィックを戻す
+
 ```bash
-# infra/.env
-DOMAIN_NAME=example.com
+# リビジョン一覧
+gcloud run revisions list --service=tarophotos --region=asia-northeast1 --project=iwillink-web
+
+# 正常なリビジョンにトラフィックを 100% 向ける
+gcloud run services update-traffic tarophotos \
+  --to-revisions=REVISION_NAME=100 \
+  --region=asia-northeast1 --project=iwillink-web
 ```
 
-**ローカルデプロイ (Context)**
-```bash
-npx cdk deploy -c domainName=example.com
-```
+> ⚠️ トラフィックを特定のリビジョンに固定している間は、新しくデプロイしたリビジョンにトラフィックが流れません。修正をデプロイした後は `gcloud run services update-traffic tarophotos --to-latest --region=asia-northeast1 --project=iwillink-web` で戻してください。
 
-**GitHub Actions**
-現在、環境変数 `DOMAIN_NAME` を渡す設定を追加する必要があります（必要に応じて workflow を修正してください）。
+---
+
+## このリポジトリのインフラ（`infra/`）
+
+`infra/` は SES ID（`SesStack`）の AWS CDK 定義のみです。CI はチェックとして `cdk synth` を実行しますが、**デプロイはしません**。
+
+> ⚠️ stack 名 `SesStack` は同一 AWS アカウント・リージョンの i-willink.com の stack（同サイトの本番 SES ID を保持）と衝突します（`.github/workflows/ci.yml` 末尾のコメント参照）。`cdk deploy` するとそれを上書きしてしまうため、**名前の衝突を解消するまで `SesStack` は deploy しません**。解消後に適用する場合は、対象 stack を名指しして手元から実行し、認証は静的キーではなく一時クレデンシャル（`aws sso login` 等）で行ってください。
 
 ---
 
 ## 前提となる権限設定
 
-デプロイには以下の権限が必要です。
-
-### 1. AWS IAM 権限（Deployer）
-
-CDK デプロイを実行する IAM ユーザーまたはロールには、以下の権限が必要です。
-最も簡単な推奨設定は **`AdministratorAccess`** ポリシーの付与です。
-
-最小権限で運用する場合は、以下のサービスへのフルアクセスが必要です：
-- **CloudFormation**: スタックの作成・更新
-- **S3**: アセットファイルのアップロード
-- **IAM**: Amplify 用ロールの作成 (PassRole 含む)
-- **Amplify**: アプリ・ブランチ・バックエンドの作成
-- **Secrets Manager**: 読み取り権限（Secrets Manager 利用時）
-- **SSM**: CDK Bootstrap 関連パラメータの読み取り
-
-### 2. GitHub Personal Access Token (PAT)
-
-`repo` と `admin:repo_hook` のスコープが必要です（[手順1](#1-github-personal-access-token-pat-の作成)参照）。
+| 対象 | 権限 |
+|-----|------|
+| デプロイ（CI） | WIF 経由で `tarophotos-deployer` に付与済み（willink-infra で管理）— 開発者ごとの設定は不要 |
+| 実行時 env の変更 | GitHub リポジトリの Admin 権限（repository variables の編集） |
+| 手動ロールバック（方法B） | プロジェクト `iwillink-web` の `run.admin`（または同等） |
 
 ---
 
 ## 必要な設定一覧
 
-### Secrets Manager 使用時（推奨）
-
 | 設定場所 | 名前 | 説明 |
 |---------|------|------|
-| AWS Secrets Manager | `github/amplify-token` | GitHub PAT |
-| GitHub Secrets | `AWS_ROLE_ARN` または `AWS_ACCESS_KEY_ID` | AWS認証 |
+| GitHub repository variables | `SES_REGION` | SES のリージョン |
+| GitHub repository variables | `SES_FROM_EMAIL` | 送信元アドレス |
+| GitHub repository variables | `SES_TO_EMAIL` | 通知の送信先 |
+| GitHub repository variables | `SES_AWS_ROLE_ARN` | federation ロールの ARN（未設定ならデプロイ失敗） |
 
-### 環境変数使用時（コスト削減）
-
-| 設定場所 | 名前 | 説明 |
-|---------|------|------|
-| GitHub Secrets | `GH_PAT` | GitHub PAT |
-| GitHub Secrets | `AWS_ROLE_ARN` または `AWS_ACCESS_KEY_ID` | AWS認証 |
-| ローカル/CI | `USE_SECRETS_MANAGER=false` | 切り替えフラグ |
+デプロイに GitHub Secrets は不要です。
 
 ---
 
@@ -219,6 +215,9 @@ CDK デプロイを実行する IAM ユーザーまたはロールには、以�
 
 | エラー | 原因 | 解決方法 |
 |-------|------|---------|
-| `Secrets Manager secret not found` | シークレット未作成 | `aws secretsmanager create-secret` を実行 |
-| `GitHub token is required` | `USE_SECRETS_MANAGER=false` なのに `GITHUB_TOKEN` 未設定 | 環境変数を設定 |
-| `Access Denied` | IAM 権限不足 | 必要な権限を付与 |
+| `repository variable SES_AWS_ROLE_ARN is unset` | repository variable が未設定 | Actions → Variables に `SES_AWS_ROLE_ARN` を設定して再実行 |
+| `Authenticate to GCP (WIF)` で失敗 | WIF プロバイダ / SA の紐付けがこのリポジトリを許可していない | willink-infra の WIF・SA 設定を確認 |
+| `Verify Cloud Run revision serves` で失敗 | 新リビジョンが 200 以外を返す、またはページに `ds-wrap` がない | 該当リビジョンの Cloud Run ログを確認（`gcloud logging read 'resource.type="cloud_run_revision" AND resource.labels.service_name="tarophotos"' --project=iwillink-web --limit=50`） |
+| `Verify Hosting front` で失敗 | Hosting の rewrite、または Hosting 経由で Cloud Run が応答しない | `firebase.json` と `tarophotos-web` の Firebase Hosting リリースを確認 |
+| main にマージしたのにデプロイされない | トリガー対象のパスに変更がない | ワークフローを手動実行 |
+| 問い合わせフォームが 500 を返す | SES の設定・認証情報 | [SES メール機能ガイド](../20_development/ses-email-guide.ja.md#-トラブルシューティング) を参照 |

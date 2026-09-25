@@ -1,20 +1,27 @@
 # CI/CD Pipeline Specification
 
-This document describes the overview and specifications of the CI/CD pipeline (`.github/workflows/ci.yml`) for this project.
+This document describes the overview and specifications of the CI/CD pipeline for this project: checks (`.github/workflows/ci.yml`) and deployment (`.github/workflows/deploy-gcp.yml`).
 
-> **Last Updated**: 2025-12-29
-> **Target Workflow**: `.github/workflows/ci.yml`
+> **Last Updated**: 2026-09-23
+> **Target Workflows**: `.github/workflows/ci.yml`, `.github/workflows/deploy-gcp.yml`
 
 ## Overview
 
-This project consolidates previously separated workflows (`ci.yml`, `deploy-infra.yml`, `deploy-app.yml`, etc.) into a single `ci.yml`, establishing an efficient pipeline based on **Path Filtering** (Change Detection).
+The pipeline is split into two independent workflows:
+
+| Workflow | Role | Deploys? |
+|----------|------|----------|
+| `ci.yml` (**CI**) | Lint / type check / unit test / build / e2e / `cdk synth` | **No** — checks only |
+| `deploy-gcp.yml` (**Deploy to GCP (Cloud Run + Firebase Hosting)**) | Build the container, deploy to Cloud Run, deploy Firebase Hosting config | Yes (production) |
+
+> History: `ci.yml` used to contain Amplify / CDK deploy jobs. Amplify was retired (production moved to Cloud Run on 2026-07-25, app deleted on 2026-09-01), and those jobs have been removed.
 
 ### Key Features
 
-- **Change Detection**: Runs only necessary jobs based on changed file paths (e.g., runs CDK deploy only when `infra/` changes).
-- **Manual Trigger**: Allows manual execution for specific targets (Apps, Infra, All) via `workflow_dispatch`.
-- **Environment Variable Checks**: Validates required and optional environment variables beforehand to prevent configuration errors.
-- **Zenn Auto-Sync**: Detects changes in Zenn content and automatically synchronizes them.
+- **Change Detection**: `ci.yml` runs only the jobs relevant to the changed paths.
+- **Manual Trigger**: both workflows support `workflow_dispatch`.
+- **Keyless Deploy**: `deploy-gcp.yml` authenticates with GitHub Actions OIDC → GCP Workload Identity Federation. No GitHub Secrets are required by either workflow.
+- **Fail-closed runtime config**: the deploy stops if the `SES_AWS_ROLE_ARN` repository variable is unset.
 
 ---
 
@@ -22,48 +29,45 @@ This project consolidates previously separated workflows (`ci.yml`, `deploy-infr
 
 ```mermaid
 graph TD
-    %% Node Definitions
-    Trigger([Trigger: Push / PR / Manual]) --> Detect[Detect Changes]
-    
-    Detect -->|apps/**| FlowApps[Apps Flow]
-    Detect -->|infra/**| FlowInfra[Infra Flow]
-    Detect -->|"articles/**, books/**"| FlowZenn[Zenn Flow]
+    %% ci.yml
+    Trigger([ci.yml: Push to main / PR / Manual]) --> Detect[Detect Changes]
 
-    subgraph "Apps Flow"
-        FlowApps --> Lint[Lint & Type Check]
-        FlowApps --> Test[Unit Test]
-        FlowApps --> Build[Build App]
-        Build --> DeployApp[Deploy App (Amplify)]
+    Detect -->|"apps/**, packages/**, package.json, pnpm-lock.yaml"| Lint[Lint & Type Check]
+    Detect -->|"infra/**"| Lint
+
+    subgraph "Apps checks"
+        Lint --> Test[Test]
+        Lint --> Build[Build]
+        Lint --> E2E["E2E (responsive)"]
     end
 
-    subgraph "Infra Flow"
-        FlowInfra --> CDKCheck[CDK Check]
-        CDKCheck --> DeployInfra[Deploy Infra (CDK)]
+    subgraph "Infra checks"
+        Lint --> CDKCheck["CDK Check (cdk synth)"]
     end
 
-    subgraph "Zenn Flow"
-        FlowZenn --> SyncZenn[Sync Zenn Content]
-    end
-
-    %% Dependencies
-    DeployApp -.->|Triggered by Amplify| AmplifyBuild[Amplify Auto Build]
+    %% deploy-gcp.yml
+    DeployTrigger(["deploy-gcp.yml: Push to main (path filter) / Manual"]) --> Auth["Authenticate to GCP (WIF)"]
+    Auth --> Image["docker build + push (Artifact Registry)"]
+    Image --> Run["gcloud run deploy tarophotos"]
+    Run --> VerifyRun[Verify Cloud Run revision]
+    VerifyRun --> Hosting["firebase deploy --only hosting:tarophotos-web"]
+    Hosting --> VerifyHosting[Verify Hosting front]
 ```
 
 ---
 
-## Change Detection (Detect Changes)
+## `ci.yml`: Change Detection (Detect Changes)
 
 Uses `git diff` to check for differences against the previous commit (or base branch for PRs) and sets the following flags.
 
 | Flag | Target Path | Description |
 |--------|---------|------|
-| `apps` | `apps/**`, `packages/**`, `package.json`, etc. | Application code changes |
-| `infra` | `infra/**` | AWS CDK infrastructure code changes |
-| `zenn` | `articles/**`, `books/**` | Zenn content changes |
+| `apps` | `apps/**`, `packages/**`, `package.json`, `pnpm-lock.yaml` | Application code changes |
+| `infra` | `infra/**` | AWS CDK (SES identity) code changes |
 
 ### Manual Execution
 
-When triggered manually (`workflow_dispatch`), flags are forcibly overwritten based on the `target` input parameter.
+When triggered manually (`workflow_dispatch`), flags are forcibly overwritten based on the `target` input parameter. (The input is labelled "Target to deploy" for historical reasons; it only selects which checks run.)
 
 - **`all`**: `apps=true`, `infra=true`
 - **`apps`**: `apps=true`, `infra=false`
@@ -71,64 +75,93 @@ When triggered manually (`workflow_dispatch`), flags are forcibly overwritten ba
 
 ---
 
-## Environment Variables
+## `ci.yml`: Job Details
 
-The CI/CD pipeline requires the following environment variables. Please set them in GitHub Secrets.
+### 1. Lint & Type Check
+- **Condition**: `apps` or `infra` flag is true
+- **Content**: `pnpm lint`, then `pnpm build` as the type check.
 
-### Required Variables
+### 2. Test
+- **Condition**: `apps` flag is true (after Lint & Type Check)
+- **Content**: `pnpm test` (Vitest).
+
+### 3. Build
+- **Condition**: `apps` flag is true (after Lint & Type Check)
+- **Content**: `pnpm build`, and uploads `apps/web/.next` as the `build-output` artifact (7 days).
+
+### 4. E2E (responsive)
+- **Condition**: `apps` flag is true (after Lint & Type Check)
+- **Content**: Installs Playwright Chromium + WebKit and runs `pnpm --filter @repo/web exec playwright test` (builds and serves internally). Uploads `playwright-report` on failure.
+
+### 5. CDK Check
+- **Condition**: `infra` flag is true (after Lint & Type Check)
+- **Content**: Runs `npx cdk synth` in `infra/`.
+- **Note**: Uses dummy values (`SES_FROM_EMAIL=synth-only@example.com`, `CDK_DEFAULT_ACCOUNT=123456789012`, `CDK_DEFAULT_REGION=ap-northeast-1`) so synth runs without secrets. Without `SES_FROM_EMAIL` / `SES_DOMAIN`, no stack is synthesized and `cdk synth` fails.
+
+### No Deploy Job
+
+`ci.yml` intentionally has no deploy job:
+
+- Application deploys are handled by `deploy-gcp.yml` (below).
+- `infra/` is **not** applied from CI. The stack name `SesStack` collides with the i-willink.com stack in the same AWS account/region, so a `cdk deploy` from here could overwrite that site's production SES identity. It is not deployed until the name collision is resolved (see the comment at the end of `ci.yml` and the [Deployment Guide](deployment.md#infrastructure-in-this-repository-infra)).
+
+---
+
+## `deploy-gcp.yml`: Deployment
+
+### Trigger
+
+- **Push to `main`** that changes `apps/web/**`, `packages/**`, `Dockerfile`, `firebase.json`, `.github/workflows/deploy-gcp.yml` or `pnpm-lock.yaml`
+- **Manual**: `workflow_dispatch` (no inputs)
+
+Runs are serialized with `concurrency: gcp-deploy-main` (`cancel-in-progress: false`).
+
+### Steps
+
+| Step | Content |
+|------|---------|
+| Authenticate to GCP (WIF) | Provider `projects/626363975800/locations/global/workloadIdentityPools/github/providers/github-oidc`, SA `tarophotos-deployer@iwillink-web.iam.gserviceaccount.com` |
+| Setup gcloud / Configure docker auth | `gcloud auth configure-docker asia-northeast1-docker.pkg.dev` |
+| Build image / Push image | `docker build` → `asia-northeast1-docker.pkg.dev/iwillink-web/web/tarophotos:<commit SHA>` |
+| Deploy to Cloud Run | Fails if `vars.SES_AWS_ROLE_ARN` is empty; `gcloud run deploy tarophotos` with the runtime SA, port 8080, 1 CPU / 512Mi, 0–2 instances, `--allow-unauthenticated`, and `--update-env-vars` for the SES variables |
+| Verify Cloud Run revision serves (live) | Service URL returns HTTP 200 and contains `ds-wrap` |
+| Deploy Firebase Hosting (rewrite config) | `npx firebase-tools@14 deploy --only hosting:tarophotos-web --project iwillink-web --non-interactive` |
+| Verify Hosting front (live) | `https://tarophotos-web.web.app/` returns HTTP 200 and contains `ds-wrap` |
+
+---
+
+## Configuration
+
+### GitHub Secrets
+
+None are required by `ci.yml` or `deploy-gcp.yml`. (AWS access keys, `GH_PAT`, `AMPLIFY_APP_NAME`, `REPO_NAME` and `DOMAIN_NAME` were used only by the removed Amplify / CDK deploy path and are no longer needed.)
+
+### GitHub Repository Variables (used by `deploy-gcp.yml`)
 
 | Variable Name | Description |
 |--------|------|
-| `REPO_NAME` | Repository name (Used for Amplify App identification) |
-| `AMPLIFY_APP_NAME` | Amplify App Name |
-| `AWS_ACCESS_KEY_ID` | AWS Access Key (For deployment) |
-| `AWS_SECRET_ACCESS_KEY` | AWS Secret Access Key (For deployment) |
-| `GH_PAT` | GitHub Personal Access Token (For repo integration during infra deploy) |
-
-> **Note**: For internal runs and deployments, the pipeline will **fail** if these variables are missing. For Fork PRs, strict checks are skipped to allow external contributions.
-
-### Optional Variables
-
-| Variable Name | Description | Warning |
-|--------|------|------|
-| `DOMAIN_NAME` | Custom Domain (e.g., `example.com`) | If unset, custom domain configuration is skipped |
+| `SES_REGION` | AWS region for SES |
+| `SES_FROM_EMAIL` | Sender address |
+| `SES_TO_EMAIL` | Contact form notification recipient |
+| `SES_AWS_ROLE_ARN` | AWS role for web identity federation (**required**; the deploy fails closed if unset) |
 
 ---
 
-## Job Details
+## Guide: Manual Execution
 
-### 1. Lint & Type Check / Unit Test
-- **Condition**: `apps` flag is true
-- **Content**: Executes ESLint, Prettier, TypeScript type checking, and Jest tests.
-
-### 2. Build App
-- **Condition**: `apps` flag is true && `main` branch
-- **Content**: Verifies the build of the Next.js application.
-
-### 3. CDK Check
-- **Condition**: `infra` flag is true
-- **Content**: Executes `cdk synth` to verify CloudFormation template generation.
-- **Note**: Uses dummy values (e.g., `CDK_DEFAULT_ACCOUNT`) to pass checks even without Secrets (useful for PRs from forks).
-
-### 4. Deploy Infrastructure
-- **Condition**: `infra` flag is true && `main` branch
-- **Content**: Executes `npm run deploy:ci` to deploy infrastructure using AWS CDK.
-- **Authentication**: Configures AWS Credentials and automatically retrieves/configures the Account ID.
-
-### 5. Deploy App (Amplify)
-- **Condition**: `apps` flag is true && `main` branch
-- **Content**: Triggers deployment to Amplify (In reality, code push triggers build on Amplify Console side, but this can be defined as an explicit step).
-- **Status**: Also triggered by `amplify.yml` updates in the infrastructure deployment.
-
----
-
-## Guide: Manual Deployment
-
-Use this when you want to re-deploy only specific components.
+### Re-run checks (`ci.yml`)
 
 1. Open the **Actions** tab in the GitHub repository.
 2. Select the **CI** workflow from the left sidebar.
 3. Click the **Run workflow** button.
-4. **Branch**: Select `main`.
-5. **Target**: Select the target to execute (`all`, `apps`, `infra`).
+4. **Branch**: Select the branch to check.
+5. **Target**: Select the checks to execute (`all`, `apps`, `infra`).
 6. Click **Run workflow**.
+
+### Re-deploy production (`deploy-gcp.yml`)
+
+1. Open the **Actions** tab in the GitHub repository.
+2. Select **Deploy to GCP (Cloud Run + Firebase Hosting)**.
+3. Click **Run workflow** on `main`.
+
+See the [Deployment Guide](deployment.md) for details, including rollback.

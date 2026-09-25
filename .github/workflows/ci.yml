@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
     inputs:
       target:
-        description: 'Target to deploy'
+        description: 'Target to check (lint/test/build/cdk synth; no deploy)'
         required: true
         default: 'all'
         type: choice
@@ -91,60 +91,6 @@ jobs:
             echo "infra=false" >> $GITHUB_OUTPUT
           fi
 
-      - name: Check Environment Variables
-        env:
-          # Basic Config
-          REPO_NAME: ${{ secrets.REPO_NAME }}
-          AMPLIFY_APP_NAME: ${{ secrets.AMPLIFY_APP_NAME }}
-          # Deploy Config (Required for main branch)
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          GH_PAT: ${{ secrets.GH_PAT }}
-          DOMAIN_NAME: ${{ secrets.DOMAIN_NAME }}
-        run: |
-          APPS_CHANGED="${{ steps.filter.outputs.apps }}"
-          INFRA_CHANGED="${{ steps.filter.outputs.infra }}"
-          IS_MAIN="${{ github.ref == 'refs/heads/main' }}"
-          # Check if this is a PR from a fork
-          IS_FORK="false"
-          if [ "${{ github.event_name }}" == "pull_request" ] && [ "${{ github.event.pull_request.head.repo.full_name }}" != "${{ github.repository }}" ]; then
-            IS_FORK="true"
-          fi
-          
-          if [ "$APPS_CHANGED" == "true" ] || [ "$INFRA_CHANGED" == "true" ]; then
-            MISSING_VARS=""
-            MISSING_OPTIONAL_VARS=""
-            
-            # Check Required Variables
-            # For Fork PRs, we skip strict check to allow CI to pass with dummy values later
-            if [ "$IS_FORK" == "false" ]; then
-              if [ -z "$REPO_NAME" ]; then MISSING_VARS="${MISSING_VARS:+$MISSING_VARS, }REPO_NAME"; fi
-              if [ -z "$AMPLIFY_APP_NAME" ]; then MISSING_VARS="${MISSING_VARS:+$MISSING_VARS, }AMPLIFY_APP_NAME"; fi
-            else
-              echo "::warning::Running from Fork. Skipping strict environment variable checks."
-            fi
-            
-            # Required for deployment (main branch only)
-            if [ "$IS_MAIN" == "true" ]; then
-              if [ -z "$AWS_ACCESS_KEY_ID" ]; then MISSING_VARS="${MISSING_VARS:+$MISSING_VARS, }AWS_ACCESS_KEY_ID"; fi
-              if [ -z "$AWS_SECRET_ACCESS_KEY" ]; then MISSING_VARS="${MISSING_VARS:+$MISSING_VARS, }AWS_SECRET_ACCESS_KEY"; fi
-              if [ -z "$GH_PAT" ]; then MISSING_VARS="${MISSING_VARS:+$MISSING_VARS, }GH_PAT"; fi
-              
-              # Optional Variables (Warning only)
-              if [ -z "$DOMAIN_NAME" ]; then MISSING_OPTIONAL_VARS="${MISSING_OPTIONAL_VARS:+$MISSING_OPTIONAL_VARS, }DOMAIN_NAME"; fi
-            fi
-            
-            if [ ! -z "$MISSING_OPTIONAL_VARS" ]; then
-              echo "::warning::Missing optional environment variables: $MISSING_OPTIONAL_VARS"
-              echo "Some features (e.g. custom domain) may not work without these variables."
-            fi
-
-            if [ ! -z "$MISSING_VARS" ]; then
-              echo "::error::Missing required environment variables: $MISSING_VARS"
-              echo "Please set these variables in GitHub Secrets."
-              exit 1
-            fi
-          fi
 
   lint:
     name: Lint & Type Check
@@ -272,7 +218,6 @@ jobs:
     needs: lint
     if: ${{ needs.changes.outputs.infra == 'true' }}
     env:
-      REPO_NAME: ${{ secrets.REPO_NAME || 'check-repo' }}
       # 合成を通すためだけのダミー値。SES_FROM_EMAIL / SES_DOMAIN のどちらも無いと
       # stack が 1 つも合成されず `cdk synth` は exit 1 で落ちる（実測）。
       # secret を使わないのは、この値が deploy に流れる経路をそもそも作らないため。
@@ -299,10 +244,10 @@ jobs:
         working-directory: infra
         run: npx cdk synth
 
-# デプロイジョブは置かない。
+# デプロイジョブは置かない（AWS の静的キー・GH_PAT 等の secrets も不要。2026-09-23 に撤去）。
 #   - Amplify（旧 deploy-app）は 2026-09-01 に撤収済み
 #   - このリポの CDK が宣言する SesStack は **stack 名が i-willink.com のものと衝突する**。
 #     同一アカウント・同一リージョンの CloudFormation stack `SesStack` は i-willink.com が
 #     所有し `EmailIdentity = noreply@i-willink.com` を持つ（実測 2026-09-01）。ここから
 #     `cdk deploy` を打つと、その本番 SES ID を noreply@tarophotos.com で上書きしてしまう。
-# infra/ の適用が要るときは、対象 stack を名指しして手元から実行する。
+# stack 名を名指ししても衝突は避けられない。infra/ を適用するのは、衝突を解消してから。

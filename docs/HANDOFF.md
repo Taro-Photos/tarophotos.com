@@ -1,6 +1,6 @@
 # HANDOFF — tarophotos.com の現在地
 
-> 最終更新: 2026-07-25（AWS → GCP 移行のカットオーバー完了時点）
+> 最終更新: 2026-09-23（移行後の後片付け完了時点）
 
 ## 本番はもう Amplify ではない
 
@@ -23,17 +23,24 @@ AWS 側ロールの台帳は [willink-infra の docs/aws-federation](https://git
 
 > ⚠️ `SES_AWS_ROLE_ARN` が未設定だと deploy CI は **fail-closed で止まる**（静的キーへの無言フォールバックをさせないため）。
 
-## ⚠️ ドキュメントが実態から遅れている
+## 移行後の後片付け（完了）
 
-`docs/` 配下の **10 ファイルが Amplify 前提のまま**（`deployment.{ja.,}md` / `ci-cd-pipeline.md` / `verification-guide.{ja.,}md` / `getting-started.{ja.,}md` / `ses-email-guide.{ja.,}md` / `README.md`）。特に `deployment.ja.md` は GitHub トークンの保管に AWS Secrets Manager（$0.40/月）を推奨しているが、**この方式は全社的に廃止済み**（鍵レス WIF へ移行）。
+| 日付 | 内容 |
+|---|---|
+| 2026-09-01 | Amplify app `dmjg8rzuebq6z` を削除。CI の deploy-app と CDK の AmplifyStack も撤去（#44） |
+| 2026-09-23 | 旧フォーム backend（Lambda `taroPhotosContact` + HTTP API `taro-photos-contact-api` + 実行ロール）を削除。90 日間の呼び出しは 0 件だった |
+| 2026-09-23 | 静的 IAM キーを無効化: `tarophotos-ses-sender`（旧 SES 送信用）/ `tarophotos-cicd-user`（旧 Amplify デプロイ用） |
+| 2026-09-23 | ci.yml から secrets 必須チェック（AWS キー / GH_PAT / AMPLIFY_APP_NAME 等）を削除。README と docs/ を Cloud Run 版に改訂 |
 
-**改訂のタイミングは 2026-08-08**（Amplify app `dmjg8rzuebq6z` の削除日）。それまでは Amplify をロールバック用に生かしているため、両方の記述が必要な過渡期にある。
+`ci.yml` はチェック専用で、デプロイジョブは持たない。`infra/` の CDK `SesStack` は **同一アカウントの i-willink.com の stack と名前が衝突する**ため、衝突を解消するまで deploy しない（`ci.yml` 末尾コメント参照）。
 
 ## 次のセッションがやること
 
-1. **2026-08-08 以降**: Amplify app `dmjg8rzuebq6z` を削除 → 同時に Amplify env に残っている **SES 静的 IAM キーを失効** → 上記 10 ファイルを Cloud Run 版へ改訂
-2. 同時に不要化した AWS 資産を撤去: Lambda `taroPhotosContact` + API Gateway `taro-photos-contact-api`（旧フォーム backend・Cloud Run 移行で不要）
-3. サイト刷新（redesign）作業は移行とは独立に継続可
+1. **2026-10 下旬を目安に**: 無効化した 2 つの IAM キーで問題が出ていなければ、キーを削除し、IAM ユーザー `tarophotos-ses-sender` / `tarophotos-cicd-user` も削除する（`tarophotos-cicd-user` は `i-willink-cicd-group` から外してから）
+2. GitHub の不要になった secrets を削除: `AMPLIFY_APP_NAME` / `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` / `GH_PAT` / `DOMAIN_NAME` / `REPO_NAME` / `SES_FROM_EMAIL` / `SES_REGION` / `SES_TO_EMAIL`（実行時 env は repository **variables** 側を使う）
+3. 旧 Lambda のバックアップ（コード + 設定。秘密値は伏せ字）はリポジトリ外のローカル `~/GitHub/_aws-backups/tarophotos-legacy-contact-2026-09-23/` にある。不要になったら消してよい。CloudWatch Logs `/aws/lambda/taroPhotosContact`（約 15KB）は残している
+4. DNS ゾーンの Cloud DNS 移行（移行計画 P6）
+5. サイト刷新（redesign）作業は継続可
 
 ## 参照
 

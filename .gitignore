@@ -50,3 +50,6 @@ coverage/
 # Playwright
 playwright-report/
 test-results/
+
+# Claude Code のローカルログ（セッションごとに生成される）
+.claude/logs/

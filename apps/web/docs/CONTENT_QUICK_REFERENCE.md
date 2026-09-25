@@ -221,7 +221,7 @@ git push origin main
 
 ### 4. デプロイ確認
 
-AWS Amplify で自動デプロイ完了後、本番サイトで確認
+main へマージすると Cloud Run へ自動デプロイされる（`.github/workflows/deploy-gcp.yml`）。完了後、本番サイトで確認
 
 ---
 

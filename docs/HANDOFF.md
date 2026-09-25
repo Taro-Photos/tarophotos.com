@@ -31,6 +31,7 @@ AWS 側ロールの台帳は [willink-infra の docs/aws-federation](https://git
 | 2026-09-23 | 旧フォーム backend（Lambda `taroPhotosContact` + HTTP API `taro-photos-contact-api` + 実行ロール）を削除。90 日間の呼び出しは 0 件だった |
 | 2026-09-23 | 静的 IAM キーを無効化: `tarophotos-ses-sender`（旧 SES 送信用）/ `tarophotos-cicd-user`（旧 Amplify デプロイ用） |
 | 2026-09-23 | ci.yml から secrets 必須チェック（AWS キー / GH_PAT / AMPLIFY_APP_NAME 等）を削除。README と docs/ を Cloud Run 版に改訂 |
+| 2026-09-25 | apps/web の Amplify 残骸を撤去（#47）: フォーム送信の静的キー fallback を削除し、Cloud Run 上で `SES_AWS_ROLE_ARN` が無ければ送信前に 500（fail-closed）。next.config の Amplify 用 env 列挙・`.env.local.example` の AWS キー欄・Amplify runbook も削除 |
 
 `ci.yml` はチェック専用で、デプロイジョブは持たない。`infra/` の CDK `SesStack` は **同一アカウントの i-willink.com の stack と名前が衝突する**ため、衝突を解消するまで deploy しない（`ci.yml` 末尾コメント参照）。
 

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { footerLegalLinks, siteOperator } from "@/app/_content/site";
 import { instagramPrimaryAccount } from "@/app/_content/socials";
 import styles from "./SiteFooter.module.css";
 
@@ -44,7 +45,20 @@ export function SiteFooter() {
           </div>
           <hr className="ds-hair" />
           <div className={styles.base}>
-            <span>© 2026 Taro Shirai · tarophotos.com</span>
+            <span>
+              © 2026 Taro Shirai · Operated by{" "}
+              <a href={siteOperator.url} target="_blank" rel="noreferrer">
+                {siteOperator.nameEn}
+              </a>
+              {footerLegalLinks.map((link) => (
+                <span key={link.href}>
+                  {" · "}
+                  <Link href={link.href} lang="ja">
+                    {link.label}
+                  </Link>
+                </span>
+              ))}
+            </span>
             <span>Tokyo, Japan · 35.68° N, 139.76° E</span>
           </div>
         </div>

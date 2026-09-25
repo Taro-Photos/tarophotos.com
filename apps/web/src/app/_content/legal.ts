@@ -1,8 +1,9 @@
 import { getSiteUrl } from "../_lib/site";
 import { primaryContactEmail } from "./contact";
+import { siteOperator } from "./site";
 
 export const legalPage = {
-  updatedAt: "2025-09-01",
+  updatedAt: "2026-09-25",
   contactEmail: primaryContactEmail,
   contactFormUrl: "/contact",
 };
@@ -96,5 +97,6 @@ export const tokushoFields: Array<{ label: string; value: string }> = [
 
 export const tokushoNotes: string[] = [
   "上記以外の条件が発生する場合は、個別見積もりの際にご案内いたします。",
+  `本サイトの運営: ${siteOperator.nameJa}（${siteOperator.url}）。作品の販売・撮影のご契約は、上記の販売事業者が行います。`,
   `表記の更新日: ${legalPage.updatedAt.replaceAll("-", "/")}`,
 ];

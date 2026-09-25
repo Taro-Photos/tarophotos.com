@@ -8,7 +8,7 @@ import { JsonLd } from "./_components/JsonLd";
 import { MotionProvider } from "./_components/MotionProvider";
 import { ScrollTracker } from "./_components/ScrollTracker";
 import { primaryContactEmail } from "./_content/contact";
-import { footerSocialLinks } from "./_content/site";
+import { footerSocialLinks, siteOperator } from "./_content/site";
 import { getSiteUrl } from "./_lib/site";
 
 const siteUrl = getSiteUrl();
@@ -40,7 +40,7 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: "Taro Shirai" }],
   creator: "Taro Shirai",
-  publisher: "Taro Shirai",
+  publisher: siteOperator.nameEn,
   // 単一 URL の同時併記バイリンガル（EN 主導）。ロケール別 URL を持たないため
   // hreflang alternates は付けず canonical のみ。言語は html lang="en" + 和字の
   // lang="ja" で表現する。
@@ -78,6 +78,12 @@ const structuredData = {
         "写真家 白井悠太郎（Taro Shirai）のポートフォリオ。風景・境目・余白をめぐる作品シリーズ。",
       inLanguage: ["en", "ja"],
       sameAs: socialProfileUrls,
+      publisher: {
+        "@type": "Organization",
+        name: siteOperator.nameJa,
+        alternateName: siteOperator.nameEn,
+        url: siteOperator.url,
+      },
     },
     {
       "@type": "Organization",

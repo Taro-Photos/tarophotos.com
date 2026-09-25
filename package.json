@@ -1,8 +1,8 @@
 {
-  "name": "next-amplify-starter-kit",
+  "name": "tarophotos-com",
   "version": "1.0.0",
   "private": true,
-  "description": "Next.js + AWS Amplify モノレポ・スターターキット",
+  "description": "tarophotos.com — Next.js モノレポ（Cloud Run + Firebase Hosting）",
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
@@ -14,8 +14,7 @@
   },
   "keywords": [
     "next.js",
-    "aws",
-    "amplify",
+    "cloud-run",
     "cdk",
     "monorepo",
     "turborepo"

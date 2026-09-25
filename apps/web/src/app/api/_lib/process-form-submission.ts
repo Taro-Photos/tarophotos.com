@@ -58,10 +58,7 @@ function getSesConfig()
   return {
     region: process.env.SES_REGION || "ap-northeast-1",
     fromEmail: process.env.SES_FROM_EMAIL || process.env.CONTACT_FROM_EMAIL,
-    credentials: {
-      accessKeyId: process.env.SES_AWS_ACCESS_KEY_ID,
-      secretAccessKey: process.env.SES_AWS_SECRET_ACCESS_KEY,
-    }
+    federationRoleArn: process.env.SES_AWS_ROLE_ARN,
   };
 }
 
@@ -69,7 +66,7 @@ let sesClient: SESClient | null = null;
 
 // Cloud Run（GCP）から SES を鍵レスで叩く経路。runtime SA の Google 署名 OIDC token を
 // metadata server から取得し、AWS 側の federation role へ AssumeRoleWithWebIdentity する。
-// 静的 IAM キー（SES_AWS_ACCESS_KEY_ID/SECRET）は Amplify 併走期間の後方互換として残す。
+// 静的 IAM キーは使わない（2026-09 に失効済み）。
 const GCP_METADATA_IDENTITY_URL =
   "http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/identity";
 const AWS_FEDERATION_AUDIENCE = "sts.amazonaws.com";
@@ -101,22 +98,16 @@ function webIdentityCredentials(roleArn: string): NonNullable<SESClientConfig["c
 
 function getSesClient(): SESClient
 {
-  const { region, credentials } = getSesConfig();
+  const { region, federationRoleArn } = getSesConfig();
 
   if (!sesClient)
   {
     const config: SESClientConfig = { region };
-    const federationRoleArn = process.env.SES_AWS_ROLE_ARN;
+    // ROLE_ARN 未設定はローカル開発のみ（Cloud Run では processFormSubmission が先に弾く）。
+    // その場合は SDK 既定の credential chain（~/.aws プロファイル等）に委ねる。
     if (federationRoleArn)
     {
       config.credentials = webIdentityCredentials(federationRoleArn);
-    }
-    else if (credentials.accessKeyId && credentials.secretAccessKey)
-    {
-      config.credentials = {
-        accessKeyId: credentials.accessKeyId,
-        secretAccessKey: credentials.secretAccessKey,
-      };
     }
     sesClient = new SESClient(config);
   }
@@ -339,11 +330,19 @@ export async function processFormSubmission(
 {
   try
   {
-    const { fromEmail } = getSesConfig();
+    const { fromEmail, federationRoleArn } = getSesConfig();
 
     if (!fromEmail)
     {
       console.error("SES is not fully configured (missing SES_FROM_EMAIL)");
+      return Response.json({ message: "Email delivery is not configured." }, { status: 500 });
+    }
+
+    // Cloud Run（K_SERVICE は Cloud Run が自動で設定）では federation 必須。
+    // 既定の credential chain が env の静的キー等を拾って無言で送れてしまうのを防ぐ（fail-closed）。
+    if (process.env.K_SERVICE && !federationRoleArn)
+    {
+      console.error("SES is not fully configured (missing SES_AWS_ROLE_ARN on Cloud Run)");
       return Response.json({ message: "Email delivery is not configured." }, { status: 500 });
     }
 

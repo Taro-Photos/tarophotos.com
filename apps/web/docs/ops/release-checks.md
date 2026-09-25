@@ -25,6 +25,7 @@ The script stops at the first failure and returns a non-zero exit code.
 
 ## Manual Follow-up
 
-- Confirm required environment variables are set in Amplify for the target backend.
-- After deploying to `release/staging`, trigger smoke checks or targeted E2E specs if `--with-e2e` was skipped.
-- Monitor Amplify pipelines for both staging and production to ensure the release succeeds.
+- Production runs on Cloud Run + Firebase Hosting; merging to `main` deploys via `.github/workflows/deploy-gcp.yml`.
+- Runtime env (`SES_REGION` / `SES_FROM_EMAIL` / `SES_TO_EMAIL` / `SES_AWS_ROLE_ARN`) comes from GitHub repository variables; confirm they are set before releasing (the deploy fails closed if `SES_AWS_ROLE_ARN` is unset).
+- Trigger smoke checks or targeted E2E specs after deploy if `--with-e2e` was skipped.
+- Monitor the `Deploy to GCP` workflow run and confirm https://tarophotos.com/ returns 200.

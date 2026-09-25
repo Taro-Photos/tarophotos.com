@@ -13,7 +13,7 @@ import { getSiteUrl } from "../_lib/site";
  * 随筆の追加（CMS なし・git ベース・i-willink.com と同型）:
  *   1. `journalIndex` に 1 エントリ追加（kind:"essay" / slug / title / date / excerpt / cover）
  *   2. `src/app/journal/<slug>/page.tsx` を作成し、本文を JSX（<Lead>/<P>/<Photo>/<H2>/<Quote>）で記述
- *   3. commit → push → Amplify が自動デプロイ
+ *   3. commit → PR → main へマージで Cloud Run へ自動デプロイ（.github/workflows/deploy-gcp.yml）
  *
  * お知らせの追加:
  *   - リンクだけの一報 … `href` を付ける（例: 新シリーズ→"/works/xxx"、外部掲載→"https://…"）。

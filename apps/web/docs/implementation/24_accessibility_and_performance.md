@@ -27,4 +27,4 @@
 
 ### 5. パフォーマンス計測
 - `npm run build` 後、`npm run start` を用いてローカルで Lighthouse (Desktop + Mobile) を走らせ、CLS/INP を記録。
-- Amplify デプロイ後に CloudFront キャッシュが残っていないか、`?cacheBust=` を付けて最新アセットを確認。
+- Cloud Run デプロイ後に Firebase Hosting の CDN キャッシュが残っていないか、`?cacheBust=` を付けて最新アセットを確認。

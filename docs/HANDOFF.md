@@ -1,6 +1,6 @@
 # HANDOFF — tarophotos.com の現在地
 
-> 最終更新: 2026-09-26（不要なインフラ資材の削除・メール受信の設定まで）
+> 最終更新: 2026-09-28（Google DKIM の設定まで）
 
 ## 本番はもう Amplify ではない
 
@@ -32,7 +32,7 @@ AWS 側ロールの台帳は [willink-infra の docs/aws-federation](https://git
 | サイトの表示 | `info@tarophotos.com`（`apps/web/src/app/_content/contact.ts`。特商法表記・JSON-LD・Contact ページに出る） |
 | 送信（フォーム） | SES `noreply@tarophotos.com`（federation・上記）→ 宛先は repository variable `SES_TO_EMAIL` |
 
-MX は 2026-09-26 まで**存在しなかった**（エイリアスはあるのに届かない状態）。追加後に SES から `info@` / `contact@` 宛てのテスト 2 通が受信箱に届くことを確認済み。Google 側の DKIM（`google._domainkey`）は未設定（管理コンソールで鍵を生成してから TXT を追加する）。
+MX は 2026-09-26 まで**存在しなかった**（エイリアスはあるのに届かない状態）。追加後に SES から `info@` / `contact@` 宛てのテスト 2 通が受信箱に届くことを確認済み。Google の DKIM は 2026-09-28 に設定（セレクタ `google`・2048 bit・Route53 に `google._domainkey` の TXT）。管理コンソールの「メールの設定ステータス」は「問題なし」。
 
 ## 移行後の後片付け（完了）
 
@@ -65,7 +65,7 @@ tarophotos.com の配信・フォーム・メールは、上の構成以外を**
 ## 次のセッションがやること
 
 1. **2026-10 下旬を目安に**: 無効化した 2 つの IAM キーで問題が出ていなければ、キーを削除し、IAM ユーザー `tarophotos-ses-sender` / `tarophotos-cicd-user` も削除する（`tarophotos-cicd-user` は `i-willink-cicd-group` から外してから）
-2. Google 側の DKIM を設定する（管理コンソール → アプリ → Gmail → メールの認証 で `tarophotos.com` の鍵を生成 → Route53 に `google._domainkey` の TXT を追加）。fit-ai.jp も SPF / DKIM が未設定（MX はあり受信は可）
+2. （済・2026-09-28）Google の DKIM を tarophotos.com と fit-ai.jp に設定。fit-ai.jp には同時に SPF（`include:amazonses.com include:_spf.google.com`）と DMARC（`p=none; rua=mailto:contact@fit-ai.jp`）も追加し、両ドメインとも管理コンソールで「問題なし」
 3. 旧 Lambda のバックアップ（コード + 設定。秘密値は伏せ字）はリポジトリ外のローカル `~/GitHub/_aws-backups/tarophotos-legacy-contact-2026-09-23/` にある。不要になったら消してよい
 4. DNS ゾーンの Cloud DNS 移行（移行計画 P6）
 5. サイト刷新（redesign）作業は継続可

@@ -25,17 +25,19 @@ const gtmId = process.env.NEXT_PUBLIC_GTM_ID;
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "Taro Shirai — Landscape Photography",
+    default: "Taro Shirai — Photographer",
     template: "%s — Taro Shirai",
   },
   description:
-    "写真家 白井悠太郎（Taro Shirai）のポートフォリオ。風景・境目・余白をめぐる作品シリーズを収録。",
+    "写真家 白井悠太郎（Taro Shirai）。風景と街の作品シリーズと、人と活動の撮影のご依頼。",
   keywords: [
     "Taro Shirai",
     "白井悠太郎",
+    "写真家",
     "風景写真",
-    "ポートフォリオ",
-    "landscape photography",
+    "スナップ",
+    "撮影依頼",
+    "photographer",
     "Tokyo",
   ],
   authors: [{ name: "Taro Shirai" }],
@@ -50,16 +52,16 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     url: siteUrl,
-    title: "Taro Shirai — Landscape Photography",
+    title: "Taro Shirai — Photographer",
     description:
-      "写真家 白井悠太郎（Taro Shirai）のポートフォリオ。風景・境目・余白をめぐる作品シリーズ。",
+      "写真家 白井悠太郎（Taro Shirai）。風景と街の作品シリーズと、人と活動の撮影のご依頼。",
     siteName: "Taro Shirai",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Taro Shirai — Landscape Photography",
+    title: "Taro Shirai — Photographer",
     description:
-      "写真家 白井悠太郎（Taro Shirai）のポートフォリオ。風景・境目・余白をめぐる作品シリーズ。",
+      "写真家 白井悠太郎（Taro Shirai）。風景と街の作品シリーズと、人と活動の撮影のご依頼。",
   },
 };
 
@@ -75,7 +77,7 @@ const structuredData = {
       name: "Taro Shirai",
       url: siteUrl,
       description:
-        "写真家 白井悠太郎（Taro Shirai）のポートフォリオ。風景・境目・余白をめぐる作品シリーズ。",
+        "写真家 白井悠太郎（Taro Shirai）。風景と街の作品シリーズと、人と活動の撮影のご依頼。",
       inLanguage: ["en", "ja"],
       sameAs: socialProfileUrls,
       publisher: {

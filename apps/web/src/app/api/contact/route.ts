@@ -33,7 +33,7 @@ export async function POST(request: NextRequest)
     autoResponse: {
       emailField: "email",
       nameField: "name",
-      subject: () => "[Taro Photos] Thank you for your inquiry",
+      subject: () => "[Taro Shirai] Thank you for your inquiry",
       html: (_, context) =>
       {
         const greeting = context.recipientName ? `${escapeHtml(context.recipientName)}` : "Hello";

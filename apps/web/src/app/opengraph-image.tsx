@@ -2,7 +2,7 @@ import { ImageResponse } from "next/og";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
-export const alt = "Taro Shirai — Landscape Photography, Tokyo";
+export const alt = "Taro Shirai — Photographer, Tokyo";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -66,7 +66,7 @@ export default function OpengraphImage() {
               textTransform: "uppercase",
             }}
           >
-            Landscape Photography · Tokyo
+            Photographer · Tokyo
           </div>
         </div>
 

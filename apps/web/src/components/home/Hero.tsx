@@ -15,7 +15,7 @@ export function Hero() {
             <p className={styles.tagJa} lang="ja">時と瞬間の、境目を。</p>
           </div>
           <div className={styles.ja}>
-            <span lang="ja">風景写真家</span>
+            <span lang="ja">写真家</span>
             <small lang="en">Tokyo / since 2016</small>
           </div>
         </div>

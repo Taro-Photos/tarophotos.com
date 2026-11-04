@@ -9,12 +9,12 @@ const siteUrl = getSiteUrl();
 export const metadata: Metadata = {
   title: "Legal",
   description:
-    "Taro Photos のプライバシーポリシーおよび特定商取引法に基づく表記。",
+    "写真家 白井悠太郎（Taro Shirai）のサイトのプライバシーポリシーおよび特定商取引法に基づく表記。",
   alternates: { canonical: "/legal" },
   openGraph: {
-    title: "Legal | Taro Photos",
+    title: "Legal — Taro Shirai",
     description:
-      "Taro Photos のプライバシーポリシーおよび特定商取引法に基づく表記。",
+      "写真家 白井悠太郎（Taro Shirai）のサイトのプライバシーポリシーおよび特定商取引法に基づく表記。",
     url: `${siteUrl}/legal`,
   },
 };
@@ -22,7 +22,7 @@ export const metadata: Metadata = {
 const structuredData = {
   "@context": "https://schema.org",
   "@type": "WebPage",
-  name: "Legal | Taro Photos",
+  name: "Legal — Taro Shirai",
   url: `${siteUrl}/legal`,
   inLanguage: "ja",
   dateModified: legalPage.updatedAt,

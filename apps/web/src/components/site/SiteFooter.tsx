@@ -14,7 +14,7 @@ export function SiteFooter() {
               <div className={styles.mark}>
                 Taro Shirai
                 <span className={styles.markJa} lang="ja">
-                  白井 悠太郎 ・ 風景写真家
+                  白井 悠太郎 ・ 写真家
                 </span>
               </div>
               <p className={styles.lede}>

@@ -40,7 +40,7 @@ export async function generateMetadata(
       canonical: `/works/${data.slug}`,
     },
     openGraph: {
-      title: `${data.title} | Taro Photos`,
+      title: `${data.title} — Taro Shirai`,
       description,
       url,
       type: "article",
@@ -55,7 +55,7 @@ export async function generateMetadata(
     },
     twitter: {
       card: "summary_large_image",
-      title: `${data.title} | Taro Photos`,
+      title: `${data.title} — Taro Shirai`,
       description,
       images: [heroImageUrl],
     },
@@ -87,7 +87,7 @@ export default async function SeriesPage({ params }: SeriesPageProps) {
   const structuredData = {
     "@context": "https://schema.org",
     "@type": "CollectionPage",
-    name: `${data.title} | Taro Photos`,
+    name: `${data.title} — Taro Shirai`,
     description: data.lead,
     url: pageUrl,
     hasPart: imageObjects,

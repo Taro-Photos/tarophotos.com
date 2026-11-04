@@ -7,7 +7,7 @@ import { getSiteUrl } from "../_lib/site";
 const siteUrl = getSiteUrl();
 const socialProfileUrls = footerSocialLinks.map((link) => link.href);
 const description =
-  "見過ごされたものを、迎えにいく。写真家 白井悠太郎（Taro Shirai）について。東京を拠点に、風景・境目・余白をめぐる作品を制作。";
+  "写真家 白井悠太郎（Taro Shirai）について。東京を拠点に、作品の制作と撮影のご依頼を受けています。";
 
 export const metadata: Metadata = {
   title: "About",
@@ -35,7 +35,7 @@ const structuredData = {
     "@type": "Person",
     name: "Taro Shirai",
     alternateName: "白井 悠太郎",
-    jobTitle: "Landscape Photographer",
+    jobTitle: "Photographer",
     url: siteUrl,
     sameAs: socialProfileUrls,
   },

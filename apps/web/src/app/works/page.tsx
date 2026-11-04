@@ -6,13 +6,13 @@ import { getSiteUrl } from "../_lib/site";
 
 const siteUrl = getSiteUrl();
 const worksDescription =
-  "Taro Shirai の作品索引。風景・境目・余白をめぐるシリーズ群を一覧できます。";
+  "写真家 白井悠太郎（Taro Shirai）の作品索引。風景と街のシリーズを一覧できます。";
 
 const fallbackOgImage = {
   src: "/hero-main.png",
   width: 1200,
   height: 630,
-  alt: "Taro Shirai — landscape",
+  alt: "Taro Shirai — works",
 };
 const primaryOgImage = workSeries[0]?.cover ?? fallbackOgImage;
 
@@ -49,7 +49,7 @@ export const metadata: Metadata = {
   description: worksDescription,
   alternates: { canonical: "/works" },
   openGraph: {
-    title: "Works | Taro Photos",
+    title: "Works — Taro Shirai",
     description: worksDescription,
     url: `${siteUrl}/works`,
     type: "website",
@@ -64,7 +64,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Works | Taro Photos",
+    title: "Works — Taro Shirai",
     description: worksDescription,
     images: [`${siteUrl}${primaryOgImage.src}`],
   },
